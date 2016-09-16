@@ -15,4 +15,8 @@ func TestMessage(t *testing.T) {
 	if msg.IsDirectMessage() {
 		t.Errorf("msg.IsDirectMessage() must be false")
 	}
+
+	if msg.IsMentionFor("") {
+		t.Errorf("msg.IsMentionFor() must be false")
+	}
 }
