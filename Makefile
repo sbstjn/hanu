@@ -1,0 +1,2 @@
+cover:
+	@./script/coverage

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sbstjn/hanu/bot"
 	"github.com/sbstjn/platzhalter"
 
 	"golang.org/x/net/websocket"
@@ -30,7 +31,7 @@ type Bot struct {
 	Socket   *websocket.Conn
 	Token    string
 	ID       string
-	Commands []Command
+	Commands []bot.Command
 }
 
 // New creates a new bot
@@ -87,7 +88,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 }
 
 // Process incoming message
-func (b *Bot) process(msg *Message) {
+func (b *Bot) process(msg *bot.Message) {
 	if !msg.IsRelevantFor(b.ID) {
 		return
 	}
@@ -95,36 +96,34 @@ func (b *Bot) process(msg *Message) {
 	msg.Text = strings.Trim(msg.Text, "<@"+b.ID+"> ")
 	for i := 0; i < len(b.Commands); i++ {
 		if b.Commands[i].Command.Matches(msg.Text) {
-			b.Commands[i].Handler(&Conversation{
-				command: &b.Commands[i].Command,
-				message: msg,
-				socket:  b.Socket,
-			})
-			fmt.Println("123")
+			b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, msg, b.Socket))
 		}
 	}
-
-	fmt.Println(msg)
 }
 
 // Listen for message on socket
 func (b *Bot) Listen() {
-	var msg Message
+	var msg bot.Message
 
 	for {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
 			log.Fatal("Error reading from Websocket")
 		} else {
 			b.process(&msg)
-			msg = Message{}
+			msg = bot.Message{}
 		}
 	}
 }
 
-// Register a new command with a handler func
-func (b *Bot) Register(command string, handler CommandHandler) {
-	b.Commands = append(b.Commands, Command{
+// Command adds a new command with custom handler
+func (b *Bot) Command(command string, handler bot.CommandHandler) {
+	b.Commands = append(b.Commands, bot.Command{
 		Command: platzhalter.NewCommand(command),
 		Handler: handler,
 	})
+}
+
+// Register registers a Command
+func (b *Bot) Register(command bot.Command) {
+	b.Commands = append(b.Commands, command)
 }

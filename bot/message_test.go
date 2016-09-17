@@ -1,4 +1,4 @@
-package hanu
+package bot
 
 import "testing"
 
@@ -18,5 +18,9 @@ func TestMessage(t *testing.T) {
 
 	if msg.IsMentionFor("") {
 		t.Errorf("msg.IsMentionFor() must be false")
+	}
+
+	if msg.IsRelevantFor("user") {
+		t.Errorf("msg.IsRelevantFor() must be true")
 	}
 }
