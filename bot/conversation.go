@@ -27,7 +27,9 @@ func (c *Conversation) Reply(text string, a ...interface{}) {
 	msg := c.message
 	msg.Text = prefix + fmt.Sprintf(text, a...)
 
-	websocket.JSON.Send(c.socket, msg)
+	if c.socket != nil {
+		websocket.JSON.Send(c.socket, msg)
+	}
 }
 
 // Param gets a parameter value by name
