@@ -24,7 +24,7 @@ generate_cover_data() {
         f="$workdir/$(echo $pkg | tr / -).cover"
         go test -covermode="$mode" -coverprofile="$f" "$pkg"
     done
-
+    
     echo "mode: $mode" >"$profile"
     grep -h -v "^mode:" "$workdir"/*.cover >>"$profile"
 }
