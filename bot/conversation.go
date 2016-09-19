@@ -1,4 +1,4 @@
-package hanu
+package bot
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type Conversation struct {
 }
 
 // Reply sends message using the socket to Slack
-func (c *Conversation) Reply(text string) {
+func (c *Conversation) Reply(text string, a ...interface{}) {
 	prefix := ""
 
 	if !c.message.IsDirectMessage() {
@@ -25,13 +25,22 @@ func (c *Conversation) Reply(text string) {
 	}
 
 	msg := c.message
-	msg.Text = prefix + text
-	fmt.Println("Reply: " + msg.Text)
+	msg.Text = prefix + fmt.Sprintf(text, a...)
 
-	websocket.JSON.Send(c.socket, msg)
+	if c.socket != nil {
+		websocket.JSON.Send(c.socket, msg)
+	}
 }
 
 // Param gets a parameter value by name
 func (c *Conversation) Param(name string) string {
 	return c.command.Param(c.message.Text, name)
+}
+
+func NewConversation(command *platzhalter.Command, message *Message, socket *websocket.Conn) *Conversation {
+	return &Conversation{
+		message: message,
+		command: command,
+		socket:  socket,
+	}
 }

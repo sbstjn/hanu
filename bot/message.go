@@ -1,4 +1,4 @@
-package hanu
+package bot
 
 import "strings"
 
