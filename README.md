@@ -1,6 +1,6 @@
 # hanu | [![MIT License](https://img.shields.io/github/license/sbstjn/hanu.svg?maxAge=3600)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md) [![GoDoc](https://godoc.org/github.com/sbstjn/hanu?status.svg)](https://godoc.org/github.com/sbstjn/hanu) [![Go Report Card](https://goreportcard.com/badge/github.com/sbstjn/hanu)](https://goreportcard.com/report/github.com/sbstjn/hanu) [![Coverage Status](https://coveralls.io/repos/github/sbstjn/hanu/badge.svg)](https://coveralls.io/github/sbstjn/hanu) [![Build Status](https://travis-ci.org/sbstjn/hanu.svg?branch=master)](https://travis-ci.org/sbstjn/hanu)
 
-The `Go` framework **hanu** supports you when creating [Slack](https://slackhq.com) bots.
+The `Go` framework **hanu** is your best friend when creating [Slack](https://slackhq.com) bots.
 
 ## Dependencies
 
@@ -9,11 +9,11 @@ The `Go` framework **hanu** supports you when creating [Slack](https://slackhq.c
 
 ## Configuration
 
-You need to create an [API token in Slack](https://api.slack.com/bot-users) for your *hanu* bot first. See the example project [hanu-example](https://github.com/sbstjn/hanu-example) for an example usage of environment variable and configuration YAML file.
+You need to create an [API token in Slack](https://api.slack.com/bot-users) for your **hanu** bot first. See the example project [hanu-example](https://github.com/sbstjn/hanu-example) for an example usage of environment variable and configuration YAML file.
 
 ## Usage
 
-Use the following example code or use the [hanu-example](https://github.com/sbstjn/hanu-example) project to get started.
+Use the following example code or the [hanu-example project](https://github.com/sbstjn/hanu-example) to get started.
 
 ```go
 package main
