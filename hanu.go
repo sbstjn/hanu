@@ -94,11 +94,31 @@ func (b *Bot) process(msg *bot.Message) {
 	}
 
 	msg.Text = strings.Trim(msg.Text, "<@"+b.ID+"> ")
-	for i := 0; i < len(b.Commands); i++ {
-		if b.Commands[i].Command.Matches(msg.Text) {
-			b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, msg, b.Socket))
+	if msg.Text == "help" {
+		msg.Text = b.generateHelp()
+
+		if !msg.IsDirectMessage() {
+			msg.Text = "<@" + msg.User + ">: " + msg.Text
+		}
+
+		websocket.JSON.Send(b.Socket, msg)
+	} else {
+		for i := 0; i < len(b.Commands); i++ {
+			if b.Commands[i].Command.Matches(msg.Text) {
+				b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, msg, b.Socket))
+			}
 		}
 	}
+}
+
+func (b *Bot) generateHelp() string {
+	help := "Thanks for asking! I can support you with those features:\n\n"
+
+	for i := 0; i < len(b.Commands); i++ {
+		help = help + "`" + b.Commands[i].Command.Text + "` *–* " + b.Commands[i].Description + "\n"
+	}
+
+	return help
 }
 
 // Listen for message on socket
