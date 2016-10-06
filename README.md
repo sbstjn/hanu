@@ -21,10 +21,11 @@ import (
 	"strings"
 
 	"github.com/sbstjn/hanu"
+	"github.com/sbstjn/hanu/bot"
 )
 
 func main() {
-	bot, err := hanu.New("SLACK_BOT_API_TOKEN")
+	slack, err := hanu.New("SLACK_BOT_API_TOKEN")
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,19 +33,19 @@ func main() {
 
 	Version := "0.0.1"
 
-	bot.Command("shout <word>", func(conv *hanu.Conversation) {
+	slack.Command("shout <word>", func(conv *bot.Conversation) {
 		conv.Reply(strings.ToUpper(conv.Param("word")))
 	})
 
-	bot.Command("whisper <word>", func(conv *hanu.Conversation) {
+	slack.Command("whisper <word>", func(conv *bot.Conversation) {
 		conv.Reply(strings.ToLower(conv.Param("word")))
 	})
 
-	bot.Command("version", func(conv *hanu.Conversation) {
+	slack.Command("version", func(conv *bot.Conversation) {
 		conv.Reply("Thanks for asking! I'm running `%s`", Version)
 	})
 
-	bot.Listen()
+	slack.Listen()
 }
 ```
 
