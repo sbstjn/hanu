@@ -117,7 +117,13 @@ func (b *Bot) sendHelp(message *bot.Message) {
 	message.Text = "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
-		message.Text = message.Text + "`" + b.Commands[i].Command.Text + "` *–* " + b.Commands[i].Description + "\n"
+		message.Text = message.Text + "`" + b.Commands[i].Command.Text + "`"
+
+		if b.Commands[i].Description != "" {
+			message.Text = message.Text + " *–* " + b.Commands[i].Description
+		}
+
+		message.Text = message.Text + "\n"
 	}
 
 	if !message.IsDirectMessage() {
