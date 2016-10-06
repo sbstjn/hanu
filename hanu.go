@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/sbstjn/hanu/bot"
 	"github.com/sbstjn/platzhalter"
@@ -48,7 +47,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 	// Check for HTTP error on connection
 	res, err := http.Get(fmt.Sprintf("https://slack.com/api/rtm.start?token=%s", b.Token))
 	if err != nil {
-		return nil, errors.New("Failed to connect to slack")
+		return nil, errors.New("Failed to connect to Slack RTM API")
 	}
 
 	// Check for HTTP status code
@@ -81,44 +80,51 @@ func (b *Bot) Handshake() (*Bot, error) {
 	// Connect to websocket
 	b.Socket, err = websocket.Dial(response.URL, "", "https://api.slack.com/")
 	if err != nil {
-		return nil, errors.New("Failed to connect to socket")
+		return nil, errors.New("Failed to connect to Websocket")
 	}
 
 	return b, nil
 }
 
 // Process incoming message
-func (b *Bot) process(msg *bot.Message) {
-	if !msg.IsRelevantFor(b.ID) {
+func (b *Bot) process(message *bot.Message) {
+	if !message.IsRelevantFor(b.ID) {
 		return
 	}
 
-	msg.Text = strings.Trim(msg.Text, "<@"+b.ID+"> ")
-	if msg.Text == "help" {
-		msg.Text = b.generateHelp()
+	message.StripMention(b.ID)
 
-		if !msg.IsDirectMessage() {
-			msg.Text = "<@" + msg.User + ">: " + msg.Text
-		}
-
-		websocket.JSON.Send(b.Socket, msg)
+	// Check if the message requests the auto-generated help command list
+	// or if we need to search for a command matching the request
+	if message.IsHelpRequest() {
+		b.sendHelp(message)
 	} else {
-		for i := 0; i < len(b.Commands); i++ {
-			if b.Commands[i].Command.Matches(msg.Text) {
-				b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, msg, b.Socket))
-			}
+		b.searchCommand(message)
+	}
+}
+
+// Search for a command matching the message
+func (b *Bot) searchCommand(message *bot.Message) {
+	for i := 0; i < len(b.Commands); i++ {
+		if b.Commands[i].Command.Matches(message.Text) {
+			b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, message, b.Socket))
 		}
 	}
 }
 
-func (b *Bot) generateHelp() string {
-	help := "Thanks for asking! I can support you with those features:\n\n"
+// Send the response for a help request
+func (b *Bot) sendHelp(message *bot.Message) {
+	message.Text = "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
-		help = help + "`" + b.Commands[i].Command.Text + "` *–* " + b.Commands[i].Description + "\n"
+		message.Text = message.Text + "`" + b.Commands[i].Command.Text + "` *–* " + b.Commands[i].Description + "\n"
 	}
 
-	return help
+	if !message.IsDirectMessage() {
+		message.Text = "<@" + message.User + ">: " + message.Text
+	}
+
+	websocket.JSON.Send(b.Socket, message)
 }
 
 // Listen for message on socket
@@ -138,8 +144,9 @@ func (b *Bot) Listen() {
 // Command adds a new command with custom handler
 func (b *Bot) Command(command string, handler bot.CommandHandler) {
 	b.Commands = append(b.Commands, bot.Command{
-		Command: platzhalter.NewCommand(command),
-		Handler: handler,
+		Command:     platzhalter.NewCommand(command),
+		Description: "",
+		Handler:     handler,
 	})
 }
 

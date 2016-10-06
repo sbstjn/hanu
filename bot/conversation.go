@@ -37,6 +37,7 @@ func (c *Conversation) Param(name string) string {
 	return c.command.Param(c.message.Text, name)
 }
 
+// NewConversation returns a Conversation struct
 func NewConversation(command *platzhalter.Command, message *Message, socket *websocket.Conn) *Conversation {
 	return &Conversation{
 		message: message,

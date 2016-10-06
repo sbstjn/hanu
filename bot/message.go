@@ -21,6 +21,16 @@ func (m *Message) IsFrom(user string) bool {
 	return m.User == user
 }
 
+// StripMention removes the mention from the message beginning
+func (m *Message) StripMention(user string) {
+	m.Text = strings.Trim(m.Text, "<@"+user+"> ")
+}
+
+// IsHelpRequest checks if the user requests the help command
+func (m *Message) IsHelpRequest() bool {
+	return strings.HasSuffix(m.Text, "help") || strings.HasPrefix(m.Text, "help")
+}
+
 // IsDirectMessage checks if the message is received using a direct messaging channel
 func (m *Message) IsDirectMessage() bool {
 	return strings.HasPrefix(m.Channel, "D")
