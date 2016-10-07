@@ -87,7 +87,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 }
 
 // Process incoming message
-func (b *Bot) process(message *bot.Message) {
+func (b *Bot) process(message *bot.SlackMessage) {
 	if !message.IsRelevantFor(b.ID) {
 		return
 	}
@@ -104,7 +104,7 @@ func (b *Bot) process(message *bot.Message) {
 }
 
 // Search for a command matching the message
-func (b *Bot) searchCommand(message *bot.Message) {
+func (b *Bot) searchCommand(message *bot.SlackMessage) {
 	for i := 0; i < len(b.Commands); i++ {
 		if b.Commands[i].Command.Matches(message.Text) {
 			b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, message, b.Socket))
@@ -113,7 +113,7 @@ func (b *Bot) searchCommand(message *bot.Message) {
 }
 
 // Send the response for a help request
-func (b *Bot) sendHelp(message *bot.Message) {
+func (b *Bot) sendHelp(message *bot.SlackMessage) {
 	message.Text = "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
@@ -135,14 +135,14 @@ func (b *Bot) sendHelp(message *bot.Message) {
 
 // Listen for message on socket
 func (b *Bot) Listen() {
-	var msg bot.Message
+	var msg bot.SlackMessage
 
 	for {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
 			log.Fatal("Error reading from Websocket")
 		} else {
 			b.process(&msg)
-			msg = bot.Message{}
+			msg = bot.SlackMessage{}
 		}
 	}
 }

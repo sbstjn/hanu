@@ -9,7 +9,7 @@ import (
 func TestConversation(t *testing.T) {
 	command := platzhalter.NewCommand("cmd test <param>")
 
-	message := Message{
+	message := SlackMessage{
 		ID:   0,
 		Text: "cmd test value",
 	}

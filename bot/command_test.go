@@ -6,7 +6,7 @@ func TestCommand(t *testing.T) {
 	cmd := NewCommand(
 		"cmd <key>",
 		"Description",
-		func(conv *Conversation) {
+		func(conv Conversation) {
 
 		},
 	)

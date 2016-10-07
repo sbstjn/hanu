@@ -5,7 +5,7 @@ import (
 )
 
 // CommandHandler is the interface for the handler function
-type CommandHandler func(*Conversation)
+type CommandHandler func(Conversation)
 
 // Command a command
 type Command struct {

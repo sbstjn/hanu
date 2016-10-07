@@ -3,7 +3,7 @@ package bot
 import "testing"
 
 func TestMessage(t *testing.T) {
-	msg := Message{
+	msg := SlackMessage{
 		ID:   0,
 		Type: "message",
 	}
