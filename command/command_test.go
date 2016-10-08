@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/sbstjn/hanu/conversation"
+	"github.com/sbstjn/hanu/message"
 )
 
 func TestCommand(t *testing.T) {
@@ -22,4 +23,22 @@ func TestCommand(t *testing.T) {
 	if cmd.Description() != "Description" {
 		t.Errorf("Command description does not match")
 	}
+}
+
+func TestHandle(t *testing.T) {
+	cmd := New(
+		"cmd <key>",
+		"Description",
+		func(conv conversation.Interface) {
+			if conv.Param("key") != "name" {
+				t.Errorf("param <key> should have value \"name\"")
+			}
+		},
+	)
+
+	msg := &message.Slack{}
+	msg.SetText("cmd name")
+
+	conv := conversation.New(cmd.Get(), msg, nil)
+	cmd.Handle(conv)
 }

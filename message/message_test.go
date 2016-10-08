@@ -4,8 +4,18 @@ import "testing"
 
 func TestMessage(t *testing.T) {
 	msg := Slack{
-		ID:   0,
-		Type: "message",
+		ID:      0,
+		UserID:  "test",
+		Type:    "message",
+		Message: "text",
+	}
+
+	if msg.User() != "test" {
+		t.Errorf("User() should be \"test\"")
+	}
+
+	if msg.Text() != "text" {
+		t.Errorf("Text() should be \"test\"")
 	}
 
 	if !msg.IsMessage() {
@@ -34,7 +44,7 @@ func TestHelpMessage(t *testing.T) {
 	}
 }
 
-func StripMention(t *testing.T) {
+func TestStripMention(t *testing.T) {
 	msg := Slack{}
 	msg.SetText("<@test> help")
 
