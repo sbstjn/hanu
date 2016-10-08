@@ -84,6 +84,6 @@ Or use the bot in a public channel:
  - [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
 
 ## Credits
- * [Host Go Slackbot on Heorku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
+ * [Host Go Slackbot on Heroku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
  * [OpsDash article about Slack Bot](https://www.opsdash.com/blog/slack-bot-in-golang.html)
  * [Go coverage script from Mathias Lafeldt](https://mlafeldt.github.io/blog/test-coverage-in-go/)
