@@ -8,8 +8,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/sbstjn/hanu/bot"
-	"github.com/sbstjn/platzhalter"
+	"github.com/sbstjn/hanu/command"
+	"github.com/sbstjn/hanu/conversation"
+	"github.com/sbstjn/hanu/message"
 
 	"golang.org/x/net/websocket"
 )
@@ -30,7 +31,7 @@ type Bot struct {
 	Socket   *websocket.Conn
 	Token    string
 	ID       string
-	Commands []bot.Command
+	Commands []command.Interface
 }
 
 // New creates a new bot
@@ -87,7 +88,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 }
 
 // Process incoming message
-func (b *Bot) process(message *bot.SlackMessage) {
+func (b *Bot) process(message message.Interface) {
 	if !message.IsRelevantFor(b.ID) {
 		return
 	}
@@ -104,59 +105,64 @@ func (b *Bot) process(message *bot.SlackMessage) {
 }
 
 // Search for a command matching the message
-func (b *Bot) searchCommand(message *bot.SlackMessage) {
+func (b *Bot) searchCommand(msg message.Interface) {
+	var cmd command.Interface
+
 	for i := 0; i < len(b.Commands); i++ {
-		if b.Commands[i].Command.Matches(message.Text) {
-			b.Commands[i].Handler(bot.NewConversation(&b.Commands[i].Command, message, b.Socket))
+		cmd = b.Commands[i]
+
+		if cmd.Get().Matches(msg.Text()) {
+			cmd.Handle(conversation.New(cmd.Get(), msg, b.Socket))
 		}
 	}
 }
 
 // Send the response for a help request
-func (b *Bot) sendHelp(message *bot.SlackMessage) {
-	message.Text = "Thanks for asking! I can support you with those features:\n\n"
+func (b *Bot) sendHelp(msg message.Interface) {
+	var cmd command.Interface
+	help := "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
-		message.Text = message.Text + "`" + b.Commands[i].Command.Text + "`"
+		cmd = b.Commands[i]
 
-		if b.Commands[i].Description != "" {
-			message.Text = message.Text + " *–* " + b.Commands[i].Description
+		help = help + "`" + cmd.Get().Text + "`"
+		if cmd.Description() != "" {
+			help = help + " *–* " + cmd.Description()
 		}
 
-		message.Text = message.Text + "\n"
+		help = help + "\n"
 	}
 
-	if !message.IsDirectMessage() {
-		message.Text = "<@" + message.User + ">: " + message.Text
+	if !msg.IsDirectMessage() {
+		help = "<@" + msg.User() + ">: " + help
 	}
 
-	websocket.JSON.Send(b.Socket, message)
+	msg.SetText(help)
+	websocket.JSON.Send(b.Socket, msg)
 }
 
 // Listen for message on socket
 func (b *Bot) Listen() {
-	var msg bot.SlackMessage
+	var msg message.Slack
 
 	for {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
 			log.Fatal("Error reading from Websocket")
 		} else {
 			b.process(&msg)
-			msg = bot.SlackMessage{}
+
+			// Clean up message after processign it
+			msg = message.Slack{}
 		}
 	}
 }
 
 // Command adds a new command with custom handler
-func (b *Bot) Command(command string, handler bot.CommandHandler) {
-	b.Commands = append(b.Commands, bot.Command{
-		Command:     platzhalter.NewCommand(command),
-		Description: "",
-		Handler:     handler,
-	})
+func (b *Bot) Command(cmd string, handler command.Handler) {
+	b.Commands = append(b.Commands, command.New(cmd, "", handler))
 }
 
 // Register registers a Command
-func (b *Bot) Register(command bot.Command) {
-	b.Commands = append(b.Commands, command)
+func (b *Bot) Register(cmd command.Interface) {
+	b.Commands = append(b.Commands, cmd)
 }
