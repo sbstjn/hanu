@@ -24,7 +24,7 @@ generate_cover_data() {
         f="$workdir/$(echo $pkg | tr / -).cover"
         go test -covermode="$mode" -coverprofile="$f" "$pkg"
     done
-    
+
     echo "mode: $mode" >"$profile"
     grep -h -v "^mode:" "$workdir"/*.cover >>"$profile"
 }
@@ -35,7 +35,7 @@ show_cover_report() {
 
 push_to_coveralls() {
     echo "Pushing coverage statistics to coveralls.io"
-    goveralls -coverprofile="$profile"
+    /home/ubuntu/.go_workspace/bin/goveralls -coverprofile="$profile" -service=circle-ci -repotoken=$COVERALLS_REPO_TOKEN
 }
 
 generate_cover_data $(go list ./...)
