@@ -1,4 +1,4 @@
-# hanu | [![MIT License](https://img.shields.io/github/license/sbstjn/hanu.svg?maxAge=3600)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md) [![GoDoc](https://godoc.org/github.com/sbstjn/hanu?status.svg)](https://godoc.org/github.com/sbstjn/hanu) [![Go Report Card](https://goreportcard.com/badge/github.com/sbstjn/hanu)](https://goreportcard.com/report/github.com/sbstjn/hanu) [![Coverage Status](https://coveralls.io/repos/github/sbstjn/hanu/badge.svg)](https://coveralls.io/github/sbstjn/hanu) [![Build Status](https://img.shields.io/circleci/project/sbstjn/hanu.svg?maxAge=3600)](https://circleci.com/gh/sbstjn/hanu)
+# hanu | [![MIT License](https://img.shields.io/github/license/sbstjn/hanu.svg?maxAge=3600)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md) [![GoDoc](https://godoc.org/github.com/sbstjn/hanu?status.svg)](https://godoc.org/github.com/sbstjn/hanu) [![Go Report Card](https://goreportcard.com/badge/github.com/sbstjn/hanu)](https://goreportcard.com/report/github.com/sbstjn/hanu) [![Hanu - Coverage Status](https://img.shields.io/coveralls/sbstjn/hanu.svg)](https://coveralls.io/github/sbstjn/hanu) [![Build Status](https://img.shields.io/circleci/project/sbstjn/hanu.svg?maxAge=3600)](https://circleci.com/gh/sbstjn/hanu)
 
 The `Go` framework **hanu** is your best friend to create [Slack](https://slackhq.com) bots! **hanu** uses [platzhalter](https://github.com/sbstjn/platzhalter) for easy command parsing (e.g. `whisper <word>`) and runs fine as a [Heroku worker](https://devcenter.heroku.com/articles/background-jobs-queueing). All you need is a [Slack API token](https://api.slack.com/bot-users) and you can create your first bot within seconds! Just have a look at the [hanu-example](https://github.com/sbstjn/hanu-example) bot …
 
@@ -84,5 +84,6 @@ Or use the bot in a public channel:
  - [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
 
 ## Credits
+ * [Host Go Slackbot on Heroku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
  * [OpsDash article about Slack Bot](https://www.opsdash.com/blog/slack-bot-in-golang.html)
  * [Go coverage script from Mathias Lafeldt](https://mlafeldt.github.io/blog/test-coverage-in-go/)
