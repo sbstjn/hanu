@@ -42,7 +42,7 @@ func (c *Command) SetDescription(text string) {
 
 // Handle calls the command's handler
 func (c *Command) Handle(conv conversation.Interface) {
-	c.handler(conv)
+	go c.handler(conv)
 }
 
 // Get returns the platzhalter command
