@@ -149,7 +149,9 @@ func (b *Bot) Listen() {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
 			log.Fatal("Error reading from Websocket")
 		} else {
-			b.process(&msg)
+			go func(msg message.Slack) {
+				b.process(&msg)
+			}(msg)
 
 			// Clean up message after processign it
 			msg = message.Slack{}

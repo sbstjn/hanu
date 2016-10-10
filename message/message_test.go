@@ -15,7 +15,7 @@ func TestMessage(t *testing.T) {
 	}
 
 	if msg.Text() != "text" {
-		t.Errorf("Text() should be \"test\"")
+		t.Errorf("Text() should be \"test\", is \"%s\"", msg.Text())
 	}
 
 	if !msg.IsMessage() {
@@ -51,6 +51,6 @@ func TestStripMention(t *testing.T) {
 	msg.StripMention("test")
 
 	if msg.Text() != "help" {
-		t.Errorf("msg.Text must be 'help'")
+		t.Errorf("msg.Text must be 'help', is \"%s\"", msg.Text())
 	}
 }
