@@ -5,8 +5,8 @@ import (
 
 	"golang.org/x/net/websocket"
 
+	"github.com/sbstjn/allot"
 	"github.com/sbstjn/hanu/message"
-	"github.com/sbstjn/platzhalter"
 )
 
 type ConnectionMock struct{}
@@ -16,31 +16,37 @@ func (c ConnectionMock) Send(ws *websocket.Conn, v interface{}) (err error) {
 }
 
 func TestConversation(t *testing.T) {
-	command := platzhalter.NewCommand("cmd test <param>")
+	command := allot.NewCommand("cmd test <param>")
 
 	msg := message.Slack{
 		ID: 0,
 	}
 	msg.SetText("cmd test value")
 
-	conv := New(&command, &msg, nil)
+	conv := New(&command, msg, nil)
 
-	if conv.Param("param") != "value" {
-		t.Errorf("Failed to get correct value for param \"param\": %s != %s", conv.Param("param"), "param")
+	str, err := conv.String("param")
+
+	if err != nil {
+		t.Errorf("Failed to get correct value for param \"param\"")
+	}
+
+	if str != "value" {
+		t.Errorf("Failed to get correct value for param \"param\": %s != %s", str, "value")
 	}
 
 	conv.Reply("example")
 }
 
 func TestConnect(t *testing.T) {
-	command := platzhalter.NewCommand("cmd test <param>")
+	cmd := allot.NewCommand("cmd test <param>")
 
 	msg := message.Slack{
 		ID: 0,
 	}
 	msg.SetText("cmd test value")
 
-	conv := New(&command, &msg, &websocket.Conn{})
+	conv := New(&cmd, msg, &websocket.Conn{})
 	conv.SetConnection(ConnectionMock{})
 
 	conv.Reply("example")

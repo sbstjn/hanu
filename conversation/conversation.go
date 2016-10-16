@@ -5,14 +5,15 @@ import (
 
 	"golang.org/x/net/websocket"
 
+	"github.com/sbstjn/allot"
 	"github.com/sbstjn/hanu/message"
-	"github.com/sbstjn/platzhalter"
 )
 
 // Interface is the interface for a conversation
 type Interface interface {
+	Integer(name string) (int, error)
+	String(name string) (string, error)
 	Reply(text string, a ...interface{})
-	Param(name string) string
 	SetConnection(connection Connection)
 
 	send(msg message.Interface)
@@ -26,8 +27,8 @@ type Connection interface {
 // Slack stores message, command and socket information and is passed
 // to the handler function
 type Slack struct {
-	message message.Interface
-	command *platzhalter.Command
+	message message.Slack
+	command allot.CommandInterface
 	socket  *websocket.Conn
 
 	connection Connection
@@ -58,13 +59,18 @@ func (c *Slack) Reply(text string, a ...interface{}) {
 	c.send(msg)
 }
 
-// Param gets a parameter value by name
-func (c *Slack) Param(name string) string {
-	return c.command.Param(c.message.Text(), name)
+// String return string paramter
+func (c Slack) String(name string) (string, error) {
+	return c.command.GetString(c.message.Text(), name)
+}
+
+// Integer returns integer parameter
+func (c Slack) Integer(name string) (int, error) {
+	return c.command.GetInteger(c.message.Text(), name)
 }
 
 // New returns a Conversation struct
-func New(command *platzhalter.Command, msg message.Interface, socket *websocket.Conn) Interface {
+func New(command allot.CommandInterface, msg message.Slack, socket *websocket.Conn) Interface {
 	conv := &Slack{
 		message: msg,
 		command: command,

@@ -1,8 +1,8 @@
 package command
 
 import (
+	"github.com/sbstjn/allot"
 	"github.com/sbstjn/hanu/conversation"
-	"github.com/sbstjn/platzhalter"
 )
 
 // Handler is the interface for the handler function
@@ -10,17 +10,14 @@ type Handler func(conversation.Interface)
 
 // Interface defines a command interface
 type Interface interface {
-	Get() *platzhalter.Command
-	Set(cmd platzhalter.Command)
+	Get() allot.CommandInterface
 	Description() string
-	SetDescription(text string)
 	Handle(conv conversation.Interface)
-	SetHandler(handler Handler)
 }
 
 // Command a command
 type Command struct {
-	command     *platzhalter.Command
+	command     allot.CommandInterface
 	description string
 	handler     Handler
 }
@@ -31,7 +28,7 @@ func (c *Command) SetHandler(handler Handler) {
 }
 
 // Description returns the description
-func (c *Command) Description() string {
+func (c Command) Description() string {
 	return c.description
 }
 
@@ -41,24 +38,24 @@ func (c *Command) SetDescription(text string) {
 }
 
 // Handle calls the command's handler
-func (c *Command) Handle(conv conversation.Interface) {
+func (c Command) Handle(conv conversation.Interface) {
 	go c.handler(conv)
 }
 
 // Get returns the platzhalter command
-func (c *Command) Get() *platzhalter.Command {
+func (c Command) Get() allot.CommandInterface {
 	return c.command
 }
 
 // Set defines the platzhalter command
-func (c *Command) Set(cmd platzhalter.Command) {
-	c.command = &cmd
+func (c *Command) Set(cmd allot.CommandInterface) {
+	c.command = cmd
 }
 
 // New creates a new command
-func New(command string, description string, handler Handler) Interface {
-	cmd := &Command{}
-	cmd.Set(platzhalter.NewCommand(command))
+func New(text string, description string, handler Handler) Command {
+	cmd := Command{}
+	cmd.Set(allot.NewCommand(text))
 	cmd.SetDescription(description)
 	cmd.SetHandler(handler)
 
