@@ -88,7 +88,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 }
 
 // Process incoming message
-func (b *Bot) process(message message.Interface) {
+func (b *Bot) process(message message.Slack) {
 	if !message.IsRelevantFor(b.ID) {
 		return
 	}
@@ -105,7 +105,7 @@ func (b *Bot) process(message message.Interface) {
 }
 
 // Search for a command matching the message
-func (b *Bot) searchCommand(msg message.Interface) {
+func (b *Bot) searchCommand(msg message.Slack) {
 	var cmd command.Interface
 
 	for i := 0; i < len(b.Commands); i++ {
@@ -118,14 +118,14 @@ func (b *Bot) searchCommand(msg message.Interface) {
 }
 
 // Send the response for a help request
-func (b *Bot) sendHelp(msg message.Interface) {
+func (b *Bot) sendHelp(msg message.Slack) {
 	var cmd command.Interface
 	help := "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
 		cmd = b.Commands[i]
 
-		help = help + "`" + cmd.Get().Text + "`"
+		help = help + "`" + cmd.Get().Text() + "`"
 		if cmd.Description() != "" {
 			help = help + " *–* " + cmd.Description()
 		}
@@ -149,9 +149,7 @@ func (b *Bot) Listen() {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
 			log.Fatal("Error reading from Websocket")
 		} else {
-			go func(msg message.Slack) {
-				b.process(&msg)
-			}(msg)
+			go b.process(msg)
 
 			// Clean up message after processign it
 			msg = message.Slack{}

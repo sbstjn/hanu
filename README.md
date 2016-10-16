@@ -1,6 +1,6 @@
 # hanu | [![MIT License](https://img.shields.io/github/license/sbstjn/hanu.svg?maxAge=3600)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md) [![GoDoc](https://godoc.org/github.com/sbstjn/hanu?status.svg)](https://godoc.org/github.com/sbstjn/hanu) [![Go Report Card](https://goreportcard.com/badge/github.com/sbstjn/hanu)](https://goreportcard.com/report/github.com/sbstjn/hanu) [![Hanu - Coverage Status](https://img.shields.io/coveralls/sbstjn/hanu.svg)](https://coveralls.io/github/sbstjn/hanu) [![Build Status](https://img.shields.io/circleci/project/sbstjn/hanu.svg?maxAge=600)](https://circleci.com/gh/sbstjn/hanu)
 
-The `Go` framework **hanu** is your best friend to create [Slack](https://slackhq.com) bots! **hanu** uses [platzhalter](https://github.com/sbstjn/platzhalter) for easy command parsing (e.g. `whisper <word>`) and runs fine as a [Heroku worker](https://devcenter.heroku.com/articles/background-jobs-queueing). All you need is a [Slack API token](https://api.slack.com/bot-users) and you can create your first bot within seconds! Just have a look at the [hanu-example](https://github.com/sbstjn/hanu-example) bot …
+The `Go` framework **hanu** is your best friend to create [Slack](https://slackhq.com) bots! **hanu** uses [allot](https://github.com/sbstjn/allot) for easy command and request parsing (e.g. `whisper <word>`) and runs fine as a [Heroku worker](https://devcenter.heroku.com/articles/background-jobs-queueing). All you need is a [Slack API token](https://api.slack.com/bot-users) and you can create your first bot within seconds! Just have a look at the [hanu-example](https://github.com/sbstjn/hanu-example) bot or [read my tutorial](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html) …
 
 ### Features
 
@@ -34,11 +34,13 @@ func main() {
 	Version := "0.0.1"
 
 	slack.Command("shout <word>", func(conv conversation.Interface) {
-		conv.Reply(strings.ToUpper(conv.Param("word")))
+		str, _ := conv.String("word")
+		conv.Reply(strings.ToUpper(str))
 	})
 
 	slack.Command("whisper <word>", func(conv conversation.Interface) {
-		conv.Reply(strings.ToLower(conv.Param("word")))
+		str, _ := conv.String("word")
+		conv.Reply(strings.ToLower(str))
 	})
 
 	slack.Command("version", func(conv conversation.Interface) {
@@ -80,7 +82,7 @@ Or use the bot in a public channel:
 
 ## Dependencies
 
- - [github.com/sbstjn/platzhalter](https://github.com/sbstjn/platzhalter) for parsing `cmd <key1> <key2>` strings
+ - [github.com/sbstjn/allot](https://github.com/sbstjn/allot) for parsing `cmd <param1:string> <param2:integer>` strings
  - [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
 
 ## Credits

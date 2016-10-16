@@ -6,12 +6,10 @@ import "strings"
 type Interface interface {
 	IsMessage() bool
 	IsFrom(user string) bool
-	StripMention(user string)
 	IsHelpRequest() bool
 	IsDirectMessage() bool
 	IsMentionFor(user string) bool
 	IsRelevantFor(user string) bool
-	SetText(text string)
 
 	Text() string
 	User() string
