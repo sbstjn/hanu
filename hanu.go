@@ -111,8 +111,9 @@ func (b *Bot) searchCommand(msg message.Slack) {
 	for i := 0; i < len(b.Commands); i++ {
 		cmd = b.Commands[i]
 
-		if cmd.Get().Matches(msg.Text()) {
-			cmd.Handle(conversation.New(cmd.Get(), msg, b.Socket))
+		match, err := cmd.Get().Match(msg.Text())
+		if err == nil {
+			cmd.Handle(conversation.New(match, msg, b.Socket))
 		}
 	}
 }

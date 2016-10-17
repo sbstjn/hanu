@@ -40,6 +40,8 @@ func TestHandle(t *testing.T) {
 	msg := message.Slack{}
 	msg.SetText("cmd name")
 
-	conv := conversation.New(cmd.Get(), msg, nil)
+	match, _ := cmd.Get().Match(msg.Text())
+
+	conv := conversation.New(match, msg, nil)
 	cmd.Handle(conv)
 }

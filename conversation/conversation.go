@@ -28,7 +28,7 @@ type Connection interface {
 // to the handler function
 type Slack struct {
 	message message.Slack
-	command allot.CommandInterface
+	match   allot.MatchInterface
 	socket  *websocket.Conn
 
 	connection Connection
@@ -61,19 +61,19 @@ func (c *Slack) Reply(text string, a ...interface{}) {
 
 // String return string paramter
 func (c Slack) String(name string) (string, error) {
-	return c.command.GetString(c.message.Text(), name)
+	return c.match.String(name)
 }
 
 // Integer returns integer parameter
 func (c Slack) Integer(name string) (int, error) {
-	return c.command.GetInteger(c.message.Text(), name)
+	return c.match.Integer(name)
 }
 
 // New returns a Conversation struct
-func New(command allot.CommandInterface, msg message.Slack, socket *websocket.Conn) Interface {
+func New(match allot.MatchInterface, msg message.Slack, socket *websocket.Conn) Interface {
 	conv := &Slack{
 		message: msg,
-		command: command,
+		match:   match,
 		socket:  socket,
 	}
 

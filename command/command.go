@@ -55,7 +55,7 @@ func (c *Command) Set(cmd allot.CommandInterface) {
 // New creates a new command
 func New(text string, description string, handler Handler) Command {
 	cmd := Command{}
-	cmd.Set(allot.NewCommand(text))
+	cmd.Set(allot.New(text))
 	cmd.SetDescription(description)
 	cmd.SetHandler(handler)
 

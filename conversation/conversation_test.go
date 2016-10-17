@@ -16,14 +16,16 @@ func (c ConnectionMock) Send(ws *websocket.Conn, v interface{}) (err error) {
 }
 
 func TestConversation(t *testing.T) {
-	command := allot.NewCommand("cmd test <param>")
+	command := allot.New("cmd test <param>")
 
 	msg := message.Slack{
 		ID: 0,
 	}
 	msg.SetText("cmd test value")
 
-	conv := New(&command, msg, nil)
+	match, _ := command.Match(msg.Text())
+
+	conv := New(match, msg, nil)
 
 	str, err := conv.String("param")
 
@@ -39,14 +41,16 @@ func TestConversation(t *testing.T) {
 }
 
 func TestConnect(t *testing.T) {
-	cmd := allot.NewCommand("cmd test <param>")
+	cmd := allot.New("cmd test <param>")
 
 	msg := message.Slack{
 		ID: 0,
 	}
 	msg.SetText("cmd test value")
 
-	conv := New(&cmd, msg, &websocket.Conn{})
+	match, _ := cmd.Match(msg.Text())
+
+	conv := New(match, msg, &websocket.Conn{})
 	conv.SetConnection(ConnectionMock{})
 
 	conv.Reply("example")
