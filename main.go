@@ -8,10 +8,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/sbstjn/hanu/command"
-	"github.com/sbstjn/hanu/conversation"
-	"github.com/sbstjn/hanu/message"
-
 	"golang.org/x/net/websocket"
 )
 
@@ -31,7 +27,7 @@ type Bot struct {
 	Socket   *websocket.Conn
 	Token    string
 	ID       string
-	Commands []command.Interface
+	Commands []CommandInterface
 }
 
 // New creates a new bot
@@ -88,7 +84,7 @@ func (b *Bot) Handshake() (*Bot, error) {
 }
 
 // Process incoming message
-func (b *Bot) process(message message.Slack) {
+func (b *Bot) process(message Message) {
 	if !message.IsRelevantFor(b.ID) {
 		return
 	}
@@ -105,22 +101,22 @@ func (b *Bot) process(message message.Slack) {
 }
 
 // Search for a command matching the message
-func (b *Bot) searchCommand(msg message.Slack) {
-	var cmd command.Interface
+func (b *Bot) searchCommand(msg Message) {
+	var cmd CommandInterface
 
 	for i := 0; i < len(b.Commands); i++ {
 		cmd = b.Commands[i]
 
 		match, err := cmd.Get().Match(msg.Text())
 		if err == nil {
-			cmd.Handle(conversation.New(match, msg, b.Socket))
+			cmd.Handle(NewConversation(match, msg, b.Socket))
 		}
 	}
 }
 
 // Send the response for a help request
-func (b *Bot) sendHelp(msg message.Slack) {
-	var cmd command.Interface
+func (b *Bot) sendHelp(msg Message) {
+	var cmd CommandInterface
 	help := "Thanks for asking! I can support you with those features:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
@@ -144,7 +140,7 @@ func (b *Bot) sendHelp(msg message.Slack) {
 
 // Listen for message on socket
 func (b *Bot) Listen() {
-	var msg message.Slack
+	var msg Message
 
 	for {
 		if websocket.JSON.Receive(b.Socket, &msg) != nil {
@@ -153,17 +149,17 @@ func (b *Bot) Listen() {
 			go b.process(msg)
 
 			// Clean up message after processign it
-			msg = message.Slack{}
+			msg = Message{}
 		}
 	}
 }
 
 // Command adds a new command with custom handler
-func (b *Bot) Command(cmd string, handler command.Handler) {
-	b.Commands = append(b.Commands, command.New(cmd, "", handler))
+func (b *Bot) Command(cmd string, handler Handler) {
+	b.Commands = append(b.Commands, NewCommand(cmd, "", handler))
 }
 
 // Register registers a Command
-func (b *Bot) Register(cmd command.Interface) {
+func (b *Bot) Register(cmd CommandInterface) {
 	b.Commands = append(b.Commands, cmd)
 }

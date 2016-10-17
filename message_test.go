@@ -1,9 +1,9 @@
-package message
+package hanu
 
 import "testing"
 
 func TestMessage(t *testing.T) {
-	msg := Slack{
+	msg := Message{
 		ID:      0,
 		UserID:  "test",
 		Type:    "message",
@@ -36,7 +36,7 @@ func TestMessage(t *testing.T) {
 }
 
 func TestHelpMessage(t *testing.T) {
-	msg := Slack{}
+	msg := Message{}
 	msg.SetText("help")
 
 	if !msg.IsHelpRequest() {
@@ -45,7 +45,7 @@ func TestHelpMessage(t *testing.T) {
 }
 
 func TestStripMention(t *testing.T) {
-	msg := Slack{}
+	msg := Message{}
 	msg.SetText("<@test> help")
 
 	msg.StripMention("test")

@@ -1,17 +1,14 @@
-package command
+package hanu
 
 import (
 	"testing"
-
-	"github.com/sbstjn/hanu/conversation"
-	"github.com/sbstjn/hanu/message"
 )
 
 func TestCommand(t *testing.T) {
-	cmd := New(
+	cmd := NewCommand(
 		"cmd <key>",
 		"Description",
-		func(conv conversation.Interface) {
+		func(conv ConversationInterface) {
 
 		},
 	)
@@ -26,10 +23,10 @@ func TestCommand(t *testing.T) {
 }
 
 func TestHandle(t *testing.T) {
-	cmd := New(
+	cmd := NewCommand(
 		"cmd <key>",
 		"Description",
-		func(conv conversation.Interface) {
+		func(conv ConversationInterface) {
 			str, _ := conv.String("key")
 			if str != "name" {
 				t.Errorf("param <key> should have value \"name\"")
@@ -37,11 +34,11 @@ func TestHandle(t *testing.T) {
 		},
 	)
 
-	msg := message.Slack{}
+	msg := Message{}
 	msg.SetText("cmd name")
 
 	match, _ := cmd.Get().Match(msg.Text())
 
-	conv := conversation.New(match, msg, nil)
+	conv := NewConversation(match, msg, nil)
 	cmd.Handle(conv)
 }

@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/sbstjn/hanu"
-	"github.com/sbstjn/hanu/conversation"
 )
 
 func main() {
@@ -33,17 +32,17 @@ func main() {
 
 	Version := "0.0.1"
 
-	slack.Command("shout <word>", func(conv conversation.Interface) {
+	slack.Command("shout <word>", func(conv hanu.ConversationInterface) {
 		str, _ := conv.String("word")
 		conv.Reply(strings.ToUpper(str))
 	})
 
-	slack.Command("whisper <word>", func(conv conversation.Interface) {
+	slack.Command("whisper <word>", func(conv hanu.ConversationInterface) {
 		str, _ := conv.String("word")
 		conv.Reply(strings.ToLower(str))
 	})
 
-	slack.Command("version", func(conv conversation.Interface) {
+	slack.Command("version", func(conv hanu.ConversationInterface) {
 		conv.Reply("Thanks for asking! I'm running `%s`", Version)
 	})
 
