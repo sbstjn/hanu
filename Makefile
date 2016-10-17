@@ -1,8 +1,14 @@
 test:
-	go test -cover ./...
+		go test -cover -race ./...
+
+bench:
+		go test -bench=. ./...
 
 race:
-	go test -v -race ./...
+		go test -v -race ./...
 
 cover:
-	@./script/coverage
+		./script/coverage
+
+coveralls:
+		./script/coverage --coveralls

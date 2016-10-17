@@ -2,6 +2,6 @@ test:
   pre:
     - go get github.com/mattn/goveralls
   override:
-    - make race
+    - make test
   post:
-    - ./script/coverage --coveralls
+    - make coveralls
