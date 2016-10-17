@@ -1,4 +1,4 @@
-package conversation
+package hanu
 
 import (
 	"fmt"
@@ -6,17 +6,16 @@ import (
 	"golang.org/x/net/websocket"
 
 	"github.com/sbstjn/allot"
-	"github.com/sbstjn/hanu/message"
 )
 
-// Interface is the interface for a conversation
-type Interface interface {
+// ConversationInterface is the interface for a conversation
+type ConversationInterface interface {
 	Integer(name string) (int, error)
 	String(name string) (string, error)
 	Reply(text string, a ...interface{})
 	SetConnection(connection Connection)
 
-	send(msg message.Interface)
+	send(msg MessageInterface)
 }
 
 // Connection is the needed interface for a connection
@@ -24,29 +23,29 @@ type Connection interface {
 	Send(ws *websocket.Conn, v interface{}) (err error)
 }
 
-// Slack stores message, command and socket information and is passed
+// Conversation stores message, command and socket information and is passed
 // to the handler function
-type Slack struct {
-	message message.Slack
+type Conversation struct {
+	message Message
 	match   allot.MatchInterface
 	socket  *websocket.Conn
 
 	connection Connection
 }
 
-func (c *Slack) send(msg message.Interface) {
+func (c *Conversation) send(msg MessageInterface) {
 	if c.socket != nil {
 		c.connection.Send(c.socket, msg)
 	}
 }
 
 // SetConnection sets the conversation connection
-func (c *Slack) SetConnection(connection Connection) {
+func (c *Conversation) SetConnection(connection Connection) {
 	c.connection = connection
 }
 
 // Reply sends message using the socket to Slack
-func (c *Slack) Reply(text string, a ...interface{}) {
+func (c *Conversation) Reply(text string, a ...interface{}) {
 	prefix := ""
 
 	if !c.message.IsDirectMessage() {
@@ -60,18 +59,18 @@ func (c *Slack) Reply(text string, a ...interface{}) {
 }
 
 // String return string paramter
-func (c Slack) String(name string) (string, error) {
+func (c Conversation) String(name string) (string, error) {
 	return c.match.String(name)
 }
 
 // Integer returns integer parameter
-func (c Slack) Integer(name string) (int, error) {
+func (c Conversation) Integer(name string) (int, error) {
 	return c.match.Integer(name)
 }
 
-// New returns a Conversation struct
-func New(match allot.MatchInterface, msg message.Slack, socket *websocket.Conn) Interface {
-	conv := &Slack{
+// NewConversation returns a Conversation struct
+func NewConversation(match allot.MatchInterface, msg Message, socket *websocket.Conn) ConversationInterface {
+	conv := &Conversation{
 		message: msg,
 		match:   match,
 		socket:  socket,

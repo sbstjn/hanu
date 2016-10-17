@@ -1,18 +1,17 @@
-package command
+package hanu
 
 import (
 	"github.com/sbstjn/allot"
-	"github.com/sbstjn/hanu/conversation"
 )
 
 // Handler is the interface for the handler function
-type Handler func(conversation.Interface)
+type Handler func(ConversationInterface)
 
-// Interface defines a command interface
-type Interface interface {
+// CommandInterface defines a command interface
+type CommandInterface interface {
 	Get() allot.CommandInterface
 	Description() string
-	Handle(conv conversation.Interface)
+	Handle(conv ConversationInterface)
 }
 
 // Command a command
@@ -38,7 +37,7 @@ func (c *Command) SetDescription(text string) {
 }
 
 // Handle calls the command's handler
-func (c Command) Handle(conv conversation.Interface) {
+func (c Command) Handle(conv ConversationInterface) {
 	go c.handler(conv)
 }
 
@@ -52,8 +51,8 @@ func (c *Command) Set(cmd allot.CommandInterface) {
 	c.command = cmd
 }
 
-// New creates a new command
-func New(text string, description string, handler Handler) Command {
+// NewCommand creates a new command
+func NewCommand(text string, description string, handler Handler) Command {
 	cmd := Command{}
 	cmd.Set(allot.New(text))
 	cmd.SetDescription(description)
