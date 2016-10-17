@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/sbstjn/hanu",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/sbstjn/allot",
+			"Rev": "7eb90012297ab2e4479badd27ce1130d8eeb7f9f"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "07b51741c1d6423d4a6abab1c49940ec09cb1aaf"
+		}
+	]
+}

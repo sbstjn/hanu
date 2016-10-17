@@ -1,0 +1,7 @@
+test:
+  pre:
+    - go get github.com/mattn/goveralls
+  override:
+    - make test
+  post:
+    - make coveralls
