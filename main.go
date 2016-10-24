@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"golang.org/x/net/websocket"
@@ -89,7 +88,10 @@ func (b *Bot) process(message Message) {
 		return
 	}
 
+	// Strip @BotName from public message
 	message.StripMention(b.ID)
+	// Strip Slack's link markup
+	message.StripLinkMarkup()
 
 	// Check if the message requests the auto-generated help command list
 	// or if we need to search for a command matching the request
@@ -143,9 +145,7 @@ func (b *Bot) Listen() {
 	var msg Message
 
 	for {
-		if websocket.JSON.Receive(b.Socket, &msg) != nil {
-			log.Fatal("Error reading from Websocket")
-		} else {
+		if websocket.JSON.Receive(b.Socket, &msg) == nil {
 			go b.process(msg)
 
 			// Clean up message after processign it

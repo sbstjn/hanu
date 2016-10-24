@@ -6,7 +6,7 @@ import (
 )
 
 var regexpMapping = map[string]string{
-	"string":  "[a-zA-Z0-9]+",
+	"string":  "[^\\s]+",
 	"integer": "[0-9]+",
 }
 
@@ -24,11 +24,13 @@ type ParameterInterface interface {
 	Equals(param ParameterInterface) bool
 	Expression() *regexp.Regexp
 	Name() string
+	Data() string
 }
 
 // Parameter is the struct
 type Parameter struct {
 	name string
+	data string
 	expr *regexp.Regexp
 }
 
@@ -42,19 +44,19 @@ func (p Parameter) Name() string {
 	return p.name
 }
 
+// Data returns the Parameter name
+func (p Parameter) Data() string {
+	return p.data
+}
+
 // Equals checks if two parameter are equal
 func (p Parameter) Equals(param ParameterInterface) bool {
 	return p.Name() == param.Name() && p.Expression().String() == param.Expression().String()
 }
 
-// NewParameter creates new parameter
-func NewParameter(name string, expr *regexp.Regexp) Parameter {
-	return Parameter{name, expr}
-}
-
 // NewParameterWithType returns
 func NewParameterWithType(name string, data string) Parameter {
-	return Parameter{name, Expression(data)}
+	return Parameter{name, data, Expression(data)}
 }
 
 // Parse parses parameter info

@@ -7,11 +7,15 @@ The **allot** library supports placeholders and regular expressions for paramete
 ## Usage
 
 ```go
-cmd := allot.NewCommand("revert <commits:integer> commits on <project:string>")
-match, err := cmd.Match("revert 12 commits on example")
+cmd := allot.NewCommand("revert <commits:integer> commits on <project:string> at (stage|prod)")
+match, err := cmd.Match("revert 12 commits on example at prod")
 
 if (err != nil)
-  fmt.Printf("Revert \"%d\" on \"%s\"", match.Integer("commits"), match.String("project"))
+  commits, _ = match.Integer("commits")
+  project, _ = match.String("project")
+  env, _ = match.Match(2)
+
+  fmt.Printf("Revert \"%d\" on \"%s\" at \"%s\"", commits, project, env)
 } else {
   fmt.Println("Request did not match command.")
 }

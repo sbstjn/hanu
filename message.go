@@ -1,6 +1,9 @@
 package hanu
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 // MessageInterface defines the message interface
 type MessageInterface interface {
@@ -51,7 +54,40 @@ func (m *Message) SetText(text string) {
 
 // StripMention removes the mention from the message beginning
 func (m *Message) StripMention(user string) {
-	m.SetText(strings.Trim(m.Message, "<@"+user+"> "))
+	prefix := "<@" + user + "> "
+	text := m.Text()
+
+	if strings.HasPrefix(text, prefix) {
+		m.SetText(text[len(prefix):len(text)])
+	}
+}
+
+// StripLinkMarkup converts <http://google.com|google.com> into google.com etc.
+// https://api.slack.com/docs/message-formatting#how_to_display_formatted_messages
+func (m *Message) StripLinkMarkup() {
+	re := regexp.MustCompile("<(.*?)>")
+	result := re.FindAllStringSubmatch(m.Text(), -1)
+	text := m.Text()
+
+	var link string
+	for _, c := range result {
+		link = c[len(c)-1]
+
+		// Done change Channel, User or Specials tags
+		if link[:2] == "#C" || link[:2] == "@U" || link[:1] == "!" {
+			continue
+		}
+
+		url := link
+		if strings.Contains(link, "|") {
+			splits := strings.Split(link, "|")
+			url = splits[1]
+		}
+
+		text = strings.Replace(text, "<"+link+">", url, -1)
+	}
+
+	m.SetText(text)
 }
 
 // IsHelpRequest checks if the user requests the help command

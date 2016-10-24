@@ -13,6 +13,8 @@ type ConversationInterface interface {
 	Integer(name string) (int, error)
 	String(name string) (string, error)
 	Reply(text string, a ...interface{})
+	Match(position int) (string, error)
+
 	SetConnection(connection Connection)
 
 	send(msg MessageInterface)
@@ -66,6 +68,11 @@ func (c Conversation) String(name string) (string, error) {
 // Integer returns integer parameter
 func (c Conversation) Integer(name string) (int, error) {
 	return c.match.Integer(name)
+}
+
+// Match returns the parameter at the position
+func (c Conversation) Match(position int) (string, error) {
+	return c.match.Match(position)
 }
 
 // NewConversation returns a Conversation struct

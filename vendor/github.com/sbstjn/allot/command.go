@@ -29,15 +29,11 @@ func (c Command) Text() string {
 
 // Expression returns the regular expression
 func (c Command) Expression() *regexp.Regexp {
-	var params []string
-	expr := strings.Split(c.Text(), " ")[0]
+	expr := c.Text()
 
 	for _, param := range c.Parameters() {
-		params = append(params, "("+param.Expression().String()+")")
-	}
-
-	if len(params) > 0 {
-		expr = expr + " " + strings.Join(params, " ")
+		expr = strings.Replace(expr, "<"+param.Name()+":"+param.Data()+">", "("+param.Expression().String()+")", -1)
+		expr = strings.Replace(expr, "<"+param.Name()+">", "("+param.Expression().String()+")", -1)
 	}
 
 	return regexp.MustCompile("^" + expr + "$")
@@ -46,12 +42,20 @@ func (c Command) Expression() *regexp.Regexp {
 // Parameters returns the list of defined parameters
 func (c Command) Parameters() []Parameter {
 	var list []Parameter
-	splits := strings.Split(c.Text(), " ")
+	re := regexp.MustCompile("<(.*?)>")
+	result := re.FindAllStringSubmatch(c.Text(), -1)
 
-	for index, item := range splits {
-		if index > 0 {
-			list = append(list, Parse(item))
+	for _, p := range result {
+		if len(p) != 2 {
+			continue
 		}
+
+		pType := ""
+		if !strings.Contains(p[1], ":") {
+			pType = ":string"
+		}
+
+		list = append(list, Parse(p[1]+pType))
 	}
 
 	return list
@@ -84,6 +88,7 @@ func (c Command) Match(req string) (MatchInterface, error) {
 
 // Matches checks if a comand definition matches a request
 func (c Command) Matches(req string) bool {
+	// fmt.Println(c.Text(), "\n => "+c.Expression().String())
 	return c.Expression().MatchString(req)
 }
 

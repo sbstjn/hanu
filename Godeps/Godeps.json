@@ -5,7 +5,7 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/sbstjn/allot",
-			"Rev": "7eb90012297ab2e4479badd27ce1130d8eeb7f9f"
+			"Rev": "e0c4571e563ec1dea69abf3050066ca1cfcff8c1"
 		},
 		{
 			"ImportPath": "golang.org/x/net/websocket",
