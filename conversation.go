@@ -14,6 +14,7 @@ type ConversationInterface interface {
 	String(name string) (string, error)
 	Reply(text string, a ...interface{})
 	Match(position int) (string, error)
+	Message() MessageInterface
 
 	SetConnection(connection Connection)
 
@@ -33,6 +34,10 @@ type Conversation struct {
 	socket  *websocket.Conn
 
 	connection Connection
+}
+
+func (c *Conversation) Message() MessageInterface {
+	return c.message
 }
 
 func (c *Conversation) send(msg MessageInterface) {
