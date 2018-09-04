@@ -1,0 +1,116 @@
+defaults: &defaults
+  working_directory: /go/src/github.com/sbstjn/hanu
+  docker:
+    - image: jimdo/golang-dep
+
+version: 2
+
+releases: &releases
+  filters:
+    tags:
+      only: /v[0-9]+(\.[0-9]+)*/
+    branches:
+      ignore: /.*/
+
+jobs:
+  checkout:
+    <<: *defaults
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "Gopkg.toml" }}
+
+      - run:
+          name: Install dependencies
+          command: dep ensure
+
+      - save_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "Gopkg.toml" }}
+          paths:
+            - vendor
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - Makefile
+            - vendor
+            - "*.go"
+            - .git
+
+  lint:
+    <<: *defaults
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Run linter
+          command: make lint
+
+  test:
+    <<: *defaults
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Notify CodeClimate about pending report
+          command: codeclimate before-build
+
+      - run:
+          name: Run tests
+          command: make test
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - c.out
+
+  coverage:
+    <<: *defaults
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Notify CodeClimate about finished build
+          command: codeclimate after-build --coverage-input-type gocov
+
+workflows:
+  version: 2
+
+  build:
+    jobs:
+      - checkout
+      - lint:
+          requires:
+            - checkout
+      - test:
+          requires:
+            - checkout
+      - coverage:
+          requires:
+            - test
+            - lint
+  release:
+    jobs:
+      - checkout:
+          <<: *releases
+      - lint:
+          <<: *releases
+          requires:
+            - checkout
+      - test:
+          <<: *releases
+          requires:
+            - checkout
+      - coverage:
+          <<: *releases
+          requires:
+            - test
+            - lint

@@ -1,14 +1,21 @@
+COVERAGE_FILE ?= c.out
+
 test:
-		go test -cover -race ./...
+	@ ginkgo -cover -coverprofile=$(COVERAGE_FILE) $(RACE) ./... 
 
-bench:
-		go test -bench=. ./...
+lint:
+	@ golint ./..
 
-race:
-		go test -v -race ./...
+tool:
+	@ go tool cover -$(MODE)=$(COVERAGE_FILE)
 
-cover:
-		./script/coverage
+race: RACE=-race
+race: test
 
-coveralls:
-		./script/coverage --coveralls
+func: MODE=func
+func: test tool
+
+html: MODE=html
+html: test tool
+
+.PHONY: test lint tool race func html
