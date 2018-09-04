@@ -1,4 +1,9 @@
-# hanu [![MIT License](https://img.shields.io/github/license/sbstjn/hanu.svg?maxAge=3600)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md) [![GoDoc](https://godoc.org/github.com/sbstjn/hanu?status.svg)](https://godoc.org/github.com/sbstjn/hanu) [![Go Report Card](https://goreportcard.com/badge/github.com/sbstjn/hanu)](https://goreportcard.com/report/github.com/sbstjn/hanu) [![Hanu - Coverage Status](https://img.shields.io/coveralls/sbstjn/hanu.svg)](https://coveralls.io/github/sbstjn/hanu) [![Build Status](https://img.shields.io/circleci/project/sbstjn/hanu.svg?maxAge=600)](https://circleci.com/gh/sbstjn/hanu)
+# hanu - Go for Slack Bots!
+
+[![Current Release](https://badgen.now.sh/github/release/sbstjn/hanu)](https://github.com/sbstjn/hanu/releases)
+[![MIT License](https://badgen.now.sh/badge/License/MIT/blue)](https://github.com/sbstjn/hanu/blob/master/LICENSE.md)
+[![Read Tutorial](https://badgen.now.sh/badge/Read/Tutorial/orange)](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
+[![Code Example](https://badgen.now.sh/badge/Code/Example/cyan)](https://github.com/sbstjn/hanu-example)
 
 The `Go` framework **hanu** is your best friend to create [Slack](https://slackhq.com) bots! **hanu** uses [allot](https://github.com/sbstjn/allot) for easy command and request parsing (e.g. `whisper <word>`) and runs fine as a [Heroku worker](https://devcenter.heroku.com/articles/background-jobs-queueing). All you need is a [Slack API token](https://api.slack.com/bot-users) and you can create your first bot within seconds! Just have a look at the [hanu-example](https://github.com/sbstjn/hanu-example) bot or [read my tutorial](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html) …
 
@@ -78,13 +83,13 @@ Or use the bot in a public channel:
 @hanu version
 ```
 
-
 ## Dependencies
 
- - [github.com/sbstjn/allot](https://github.com/sbstjn/allot) for parsing `cmd <param1:string> <param2:integer>` strings
- - [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
+- [github.com/sbstjn/allot](https://github.com/sbstjn/allot) for parsing `cmd <param1:string> <param2:integer>` strings
+- [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
 
 ## Credits
- * [Host Go Slackbot on Heroku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
- * [OpsDash article about Slack Bot](https://www.opsdash.com/blog/slack-bot-in-golang.html)
- * [Go coverage script from Mathias Lafeldt](https://mlafeldt.github.io/blog/test-coverage-in-go/)
+
+- [Host Go Slackbot on Heroku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
+- [OpsDash article about Slack Bot](https://www.opsdash.com/blog/slack-bot-in-golang.html)
+- [Go coverage script from Mathias Lafeldt](https://mlafeldt.github.io/blog/test-coverage-in-go/)
