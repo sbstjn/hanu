@@ -14,7 +14,7 @@ The `Go` framework **hanu** is your best friend to create [Slack](https://slackh
 - Auto-Generated command list for `help`
 - Works fine as a **worker** on Heroku
 
-## Usage
+## V1 Usage
 
 Use the following example code or the [hanu-example](https://github.com/sbstjn/hanu-example) bot to get started.
 
@@ -83,12 +83,55 @@ Or use the bot in a public channel:
 @hanu version
 ```
 
+## V2 Usage
+
+To use version 2 of the package, simply add `/v2` to the package import:
+
+    import "github.com/sbstjn/hanu/v2"
+
+It is very similar to the above, but there are a few extra things.  You can set the
+command prefix, if you like using those:
+
+```
+bot.SetCommandPrefix("!")
+bot.SetReplyOnly(false)
+```
+
+This will make it so you have to type:
+
+```
+!whisper I love turtles
+```
+
+For the command to be recognised.  Setting the bot to not reply only means it will listen to
+all messages in an attempt to find a command (except help will only be printed when bot is mentioned).
+
+Also, the `ConversationInterface` was changed to just `Convo` to save your wrists:
+
+```
+	slack.Command("whisper <word>", func(conv hanu.Convo) {
+		str, _ := conv.String("word")
+		conv.Reply(strings.ToLower(str))
+	})
+```
+
+The bot can also now talk arbitrarily:
+
+```
+bot.Say("UGHXISDF324", "I like %s", "turtles")
+
+devops := bot.Channel("UGHXISDF324")
+devops.Say("Host called %s is not responding to pings", "bobsburgers01")
+```
+
 ## Dependencies
 
 - [github.com/sbstjn/allot](https://github.com/sbstjn/allot) for parsing `cmd <param1:string> <param2:integer>` strings
 - [golang.org/x/net/websocket](http://golang.org/x/net/websocket) for websocket communication with Slack
+- [github.com/nlopes/slack](http://github.com/nlopes/slack) for real time communication with Slack
 
 ## Credits
 
 - [Host Go Slackbot on Heroku](https://sbstjn.com/host-golang-slackbot-on-heroku-with-hanu.html)
 - [OpsDash article about Slack Bot](https://www.opsdash.com/blog/slack-bot-in-golang.html)
+- [A Simple Slack Bot in Go - The Bot](ttps://dev.to/shindakun/a-simple-slack-bot-in-go---the-bot-4olg)
