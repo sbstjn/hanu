@@ -26,6 +26,8 @@ func New(token string) (*Bot, error) {
 	}
 
 	rtm := api.NewRTM()
+	go rtm.ManageConnection()
+
 	bot := &Bot{RTM: rtm, ID: id.User.ID}
 	return bot, nil
 }

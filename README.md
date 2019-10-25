@@ -115,7 +115,8 @@ Also, the `ConversationInterface` was changed to just `Convo` to save your wrist
 	})
 ```
 
-The bot can also now talk arbitrarily:
+The bot can also now talk arbitrarily and has a Channel object that is easy to
+interface with since it's one function:
 
 ```
 slack.Say("UGHXISDF324", "I like %s", "turtles")
