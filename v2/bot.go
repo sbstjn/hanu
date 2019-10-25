@@ -7,17 +7,6 @@ import (
 	"github.com/nlopes/slack"
 )
 
-type handshakeResponseSelf struct {
-	ID string `json:"id"`
-}
-
-type handshakeResponse struct {
-	Ok    bool                  `json:"ok"`
-	Error string                `json:"error"`
-	URL   string                `json:"url"`
-	Self  handshakeResponseSelf `json:"self"`
-}
-
 // Bot is the main object
 type Bot struct {
 	RTM       *slack.RTM
@@ -42,13 +31,15 @@ func New(token string) (*Bot, error) {
 
 // SetCommandPrefix will set thing that must be prefixed to the command,
 // there is no prefix by default but one could set it to "!" for instance
-func (b *Bot) SetCommandPrefix(pfx string) {
+func (b *Bot) SetCommandPrefix(pfx string) *Bot {
 	b.CmdPrefix = pfx
+	return b
 }
 
 // SetReplyOnly will make the bot only respond to messages it is mentioned in
-func (b *Bot) SetReplyOnly(ro bool) {
+func (b *Bot) SetReplyOnly(ro bool) *Bot {
 	b.ReplyOnly = ro
+	return b
 }
 
 // Process incoming message
@@ -86,9 +77,14 @@ func (b *Bot) searchCommand(msg Message) {
 	}
 }
 
-// Say will cause the bot to say something on the specified channel
+// Channel will return a channel that the bot can talk in
+func (b *Bot) Channel(id string) Channel {
+	return Channel{b, id}
+}
+
+// Say will cause the bot to say something in the specified channel
 func (b *Bot) Say(channel, msg string, a ...interface{}) {
-	b.send(Message{ChannelID: channel, Message: msg})
+	b.send(Message{ChannelID: channel, Message: fmt.Sprintf(msg, a...)})
 }
 
 func (b *Bot) send(msg MessageInterface) {
@@ -153,4 +149,16 @@ func (b *Bot) Command(cmd string, handler Handler) {
 // Register registers a Command
 func (b *Bot) Register(cmd CommandInterface) {
 	b.Commands = append(b.Commands, cmd)
+}
+
+// Channel is an object that allows a bot to say things without
+// specifying the channel in every function call
+type Channel struct {
+	bot *Bot
+	ID  string
+}
+
+// Say will cause the bot to say something in the channel
+func (ch *Channel) Say(msg string, a ...interface{}) {
+	ch.bot.Say(ch.ID, msg, a...)
 }
