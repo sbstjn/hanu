@@ -93,8 +93,8 @@ It is very similar to the above, but there are a few extra things.  You can set 
 command prefix, if you like using those:
 
 ```
-bot.SetCommandPrefix("!")
-bot.SetReplyOnly(false)
+slack.SetCommandPrefix("!")
+slack.SetReplyOnly(false)
 ```
 
 This will make it so you have to type:
@@ -118,10 +118,24 @@ Also, the `ConversationInterface` was changed to just `Convo` to save your wrist
 The bot can also now talk arbitrarily:
 
 ```
-bot.Say("UGHXISDF324", "I like %s", "turtles")
+slack.Say("UGHXISDF324", "I like %s", "turtles")
 
-devops := bot.Channel("UGHXISDF324")
+devops := slack.Channel("UGHXISDF324")
 devops.Say("Host called %s is not responding to pings", "bobsburgers01")
+```
+
+You can print the help message whenever you want:
+
+```
+slack.Say("UGHXISDF324", bot.BuildHelpText())
+```
+
+And there is an unknown command handler, but it only works when in reply only mode:
+
+```
+slack.SetReplyOnly(true).UnknownCommand(func(c hanu.Convo) {
+	c.Reply(slack.BuildHelpText())
+})
 ```
 
 ## Dependencies

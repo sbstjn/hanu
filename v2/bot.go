@@ -9,11 +9,12 @@ import (
 
 // Bot is the main object
 type Bot struct {
-	RTM       *slack.RTM
-	ID        string
-	Commands  []CommandInterface
-	ReplyOnly bool
-	CmdPrefix string
+	RTM               *slack.RTM
+	ID                string
+	Commands          []CommandInterface
+	ReplyOnly         bool
+	CmdPrefix         string
+	unknownCmdHandler Handler
 }
 
 // New creates a new bot
@@ -60,11 +61,16 @@ func (b *Bot) process(msg Message) {
 		return
 	}
 
-	b.searchCommand(msg)
+	handled := b.searchCommand(msg)
+	if !handled && b.ReplyOnly {
+		if b.unknownCmdHandler != nil {
+			b.unknownCmdHandler(NewConversation(dummyMatch{}, msg, b))
+		}
+	}
 }
 
 // Search for a command matching the message
-func (b *Bot) searchCommand(msg Message) {
+func (b *Bot) searchCommand(msg Message) bool {
 	var cmd CommandInterface
 
 	for i := 0; i < len(b.Commands); i++ {
@@ -73,8 +79,11 @@ func (b *Bot) searchCommand(msg Message) {
 		match, err := cmd.Get().Match(msg.Text())
 		if err == nil {
 			cmd.Handle(NewConversation(match, msg, b))
+			return true
 		}
 	}
+
+	return false
 }
 
 // Channel will return a channel that the bot can talk in
@@ -95,10 +104,10 @@ func (b *Bot) send(msg MessageInterface) {
 	})
 }
 
-// Send the response for a help request
-func (b *Bot) sendHelp(msg Message) {
+// BuildHelpText will build the help text
+func (b *Bot) BuildHelpText() string {
 	var cmd CommandInterface
-	help := "Thanks for asking! I can support you with those features:\n\n"
+	help := "The available commands are:\n\n"
 
 	for i := 0; i < len(b.Commands); i++ {
 		cmd = b.Commands[i]
@@ -111,12 +120,18 @@ func (b *Bot) sendHelp(msg Message) {
 		help = help + "\n"
 	}
 
+	return help
+}
+
+// sendHelp will send help to the channel and user in the given message
+func (b *Bot) sendHelp(msg MessageInterface) {
+	help := b.BuildHelpText()
+
 	if !msg.IsDirectMessage() {
 		help = "<@" + msg.User() + ">: " + help
 	}
 
-	msg.SetText(help)
-	b.send(msg)
+	b.Say(msg.Channel(), help)
 }
 
 // Listen for message on socket
@@ -146,19 +161,13 @@ func (b *Bot) Command(cmd string, handler Handler) {
 	b.Commands = append(b.Commands, NewCommand(b.CmdPrefix+cmd, "", handler))
 }
 
+// UnknownCommand will be called when the user calls a command that is unknown,
+// but it will only work when the bot is in reply only mode
+func (b *Bot) UnknownCommand(h Handler) {
+	b.unknownCmdHandler = h
+}
+
 // Register registers a Command
 func (b *Bot) Register(cmd CommandInterface) {
 	b.Commands = append(b.Commands, cmd)
-}
-
-// Channel is an object that allows a bot to say things without
-// specifying the channel in every function call
-type Channel struct {
-	bot *Bot
-	ID  string
-}
-
-// Say will cause the bot to say something in the channel
-func (ch *Channel) Say(msg string, a ...interface{}) {
-	ch.bot.Say(ch.ID, msg, a...)
 }
