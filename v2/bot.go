@@ -52,23 +52,24 @@ func (b *Bot) SetReplyOnly(ro bool) {
 }
 
 // Process incoming message
-func (b *Bot) process(message Message) {
-	if b.ReplyOnly && !message.IsRelevantFor(b.ID) {
+func (b *Bot) process(msg Message) {
+	// Strip @BotName from public message
+	msg.SetText(msg.StripMention(b.ID))
+	// Strip Slack's link markup
+	msg.SetText(msg.StripLinkMarkup())
+
+	// Only send auto-generated help command list if directly mentioned
+	if msg.IsRelevantFor(b.ID) && msg.IsHelpRequest() {
+		b.sendHelp(msg)
 		return
 	}
 
-	// Strip @BotName from public message
-	message.StripMention(b.ID)
-	// Strip Slack's link markup
-	message.StripLinkMarkup()
-
-	// Check if the message requests the auto-generated help command list
-	// or if we need to search for a command matching the request
-	if message.IsHelpRequest() {
-		b.sendHelp(message)
-	} else {
-		b.searchCommand(message)
+	// if bot can only reply, ensure we were mentioned
+	if b.ReplyOnly && !msg.IsRelevantFor(b.ID) {
+		return
 	}
+
+	b.searchCommand(msg)
 }
 
 // Search for a command matching the message

@@ -25,6 +25,7 @@ func NewMessage(ev *slack.MessageEvent) Message {
 	msg := Message{}
 	msg.ChannelID = ev.Channel
 	msg.Message = ev.Text
+	msg.OriginalMessage = ev.Text
 	msg.UserID = ev.Username
 	msg.Type = ev.Type
 	return msg
@@ -32,11 +33,12 @@ func NewMessage(ev *slack.MessageEvent) Message {
 
 // Message is the Message structure for received and sent messages using Slack
 type Message struct {
-	ID        uint64 `json:"id"`
-	Type      string `json:"type"`
-	ChannelID string `json:"channel"`
-	UserID    string `json:"user"`
-	Message   string `json:"text"`
+	ID              uint64
+	Type            string
+	ChannelID       string
+	UserID          string
+	Message         string
+	OriginalMessage string
 }
 
 // Text returns the message text
@@ -56,7 +58,7 @@ func (m Message) User() string {
 
 // IsMessage checks if it is a Message or some other kind of processing information
 func (m Message) IsMessage() bool {
-	return m.Type == "message"
+	return true
 }
 
 // IsFrom checks the sender of the message
@@ -70,18 +72,20 @@ func (m *Message) SetText(text string) {
 }
 
 // StripMention removes the mention from the message beginning
-func (m *Message) StripMention(user string) {
+func (m *Message) StripMention(user string) string {
 	prefix := "<@" + user + "> "
 	text := m.Text()
 
 	if strings.HasPrefix(text, prefix) {
-		m.SetText(text[len(prefix):len(text)])
+		return text[len(prefix):len(text)]
 	}
+
+	return text
 }
 
 // StripLinkMarkup converts <http://google.com|google.com> into google.com etc.
 // https://api.slack.com/docs/message-formatting#how_to_display_formatted_messages
-func (m *Message) StripLinkMarkup() {
+func (m *Message) StripLinkMarkup() string {
 	re := regexp.MustCompile("<(.*?)>")
 	result := re.FindAllStringSubmatch(m.Text(), -1)
 	text := m.Text()
@@ -104,7 +108,7 @@ func (m *Message) StripLinkMarkup() {
 		text = strings.Replace(text, "<"+link+">", url, -1)
 	}
 
-	m.SetText(text)
+	return text
 }
 
 // IsHelpRequest checks if the user requests the help command
@@ -119,7 +123,7 @@ func (m Message) IsDirectMessage() bool {
 
 // IsMentionFor checks if the given user was mentioned with the message
 func (m Message) IsMentionFor(user string) bool {
-	return strings.HasPrefix(m.Message, "<@"+user+">")
+	return strings.HasPrefix(m.OriginalMessage, "<@"+user+">")
 }
 
 // IsRelevantFor checks if the message is relevant for a user
