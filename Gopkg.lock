@@ -2,6 +2,22 @@
 
 
 [[projects]]
+  digest = "1:e62657cca9badaa308d86e7716083e4c5933bb78e30a17743fc67f50be26f6f4"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b"
+  version = "v1.4.1"
+
+[[projects]]
+  digest = "1:20de7c621165002b38aa0378d26e4ad0470cf2c8ecc4934f7df50d19d6c0dab0"
+  name = "github.com/nlopes/slack"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8ab4d0b364ef1e9af5d102531da20d5ec902b6c4"
+  version = "v0.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:ad65c21cad052ae0b994f7124129b26e8125d2a06c2316ee9e97cb23ba75f527"
   name = "github.com/sbstjn/allot"
@@ -21,6 +37,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/nlopes/slack",
     "github.com/sbstjn/allot",
     "golang.org/x/net/websocket",
   ]

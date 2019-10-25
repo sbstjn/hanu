@@ -1,0 +1,155 @@
+package hanu
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/nlopes/slack"
+)
+
+type handshakeResponseSelf struct {
+	ID string `json:"id"`
+}
+
+type handshakeResponse struct {
+	Ok    bool                  `json:"ok"`
+	Error string                `json:"error"`
+	URL   string                `json:"url"`
+	Self  handshakeResponseSelf `json:"self"`
+}
+
+// Bot is the main object
+type Bot struct {
+	RTM       *slack.RTM
+	ID        string
+	Commands  []CommandInterface
+	ReplyOnly bool
+	CmdPrefix string
+}
+
+// New creates a new bot
+func New(token string) (*Bot, error) {
+	api := slack.New(token)
+	id, err := api.GetUserIdentity()
+	if err != nil {
+		return nil, err
+	}
+
+	rtm := api.NewRTM()
+	bot := &Bot{RTM: rtm, ID: id.User.ID}
+	return bot, nil
+}
+
+// SetCommandPrefix will set thing that must be prefixed to the command,
+// there is no prefix by default but one could set it to "!" for instance
+func (b *Bot) SetCommandPrefix(pfx string) {
+	b.CmdPrefix = pfx
+}
+
+// SetReplyOnly will make the bot only respond to messages it is mentioned in
+func (b *Bot) SetReplyOnly(ro bool) {
+	b.ReplyOnly = ro
+}
+
+// Process incoming message
+func (b *Bot) process(message Message) {
+	if b.ReplyOnly && !message.IsRelevantFor(b.ID) {
+		return
+	}
+
+	// Strip @BotName from public message
+	message.StripMention(b.ID)
+	// Strip Slack's link markup
+	message.StripLinkMarkup()
+
+	// Check if the message requests the auto-generated help command list
+	// or if we need to search for a command matching the request
+	if message.IsHelpRequest() {
+		b.sendHelp(message)
+	} else {
+		b.searchCommand(message)
+	}
+}
+
+// Search for a command matching the message
+func (b *Bot) searchCommand(msg Message) {
+	var cmd CommandInterface
+
+	for i := 0; i < len(b.Commands); i++ {
+		cmd = b.Commands[i]
+
+		match, err := cmd.Get().Match(msg.Text())
+		if err == nil {
+			cmd.Handle(NewConversation(match, msg, b))
+		}
+	}
+}
+
+// Say will cause the bot to say something on the specified channel
+func (b *Bot) Say(channel, msg string, a ...interface{}) {
+	b.send(Message{ChannelID: channel, Message: msg})
+}
+
+func (b *Bot) send(msg MessageInterface) {
+	b.RTM.SendMessage(&slack.OutgoingMessage{
+		Channel: msg.Channel(),
+		Text:    msg.Text(),
+		Type:    "message",
+	})
+}
+
+// Send the response for a help request
+func (b *Bot) sendHelp(msg Message) {
+	var cmd CommandInterface
+	help := "Thanks for asking! I can support you with those features:\n\n"
+
+	for i := 0; i < len(b.Commands); i++ {
+		cmd = b.Commands[i]
+
+		help = help + "`" + b.CmdPrefix + cmd.Get().Text() + "`"
+		if cmd.Description() != "" {
+			help = help + " *–* " + cmd.Description()
+		}
+
+		help = help + "\n"
+	}
+
+	if !msg.IsDirectMessage() {
+		help = "<@" + msg.User() + ">: " + help
+	}
+
+	msg.SetText(help)
+	b.send(msg)
+}
+
+// Listen for message on socket
+func (b *Bot) Listen(ctx context.Context) {
+
+	for {
+		select {
+		case ev := <-b.RTM.IncomingEvents:
+			switch v := ev.Data.(type) {
+			case *slack.MessageEvent:
+				go b.process(NewMessage(v))
+
+			case *slack.RTMError:
+				fmt.Printf("Error: %s\n", v.Error())
+
+			case *slack.InvalidAuthEvent:
+				fmt.Printf("Invalid credentials")
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+// Command adds a new command with custom handler
+func (b *Bot) Command(cmd string, handler Handler) {
+	b.Commands = append(b.Commands, NewCommand(b.CmdPrefix+cmd, "", handler))
+}
+
+// Register registers a Command
+func (b *Bot) Register(cmd CommandInterface) {
+	b.Commands = append(b.Commands, cmd)
+}
