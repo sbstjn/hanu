@@ -15,20 +15,23 @@ type Bot struct {
 	ReplyOnly         bool
 	CmdPrefix         string
 	unknownCmdHandler Handler
+	msgs              map[string]chan Message
 }
 
 // New creates a new bot
 func New(token string) (*Bot, error) {
 	api := slack.New(token)
-	id, err := api.GetUserIdentity()
-	if err != nil {
-		return nil, err
-	}
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-	bot := &Bot{RTM: rtm, ID: id.User.ID}
+	// id, err := rtm.GetUserIdentity()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	bot := &Bot{RTM: rtm, msgs: make(map[string]chan Message)}
+	// bot := &Bot{RTM: rtm}
 	return bot, nil
 }
 
