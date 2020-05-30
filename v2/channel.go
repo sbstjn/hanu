@@ -11,3 +11,14 @@ type Channel struct {
 func (ch *Channel) Say(msg string, a ...interface{}) {
 	ch.bot.Say(ch.ID, msg, a...)
 }
+
+// Messages returns a channel out of which comes
+// any messages sent in the channel
+func (ch *Channel) Messages() chan Message {
+	c, found := ch.bot.msgs[ch.ID]
+	if !found {
+		c = make(chan Message, 10)
+		ch.bot.msgs[ch.ID] = c
+	}
+	return c
+}

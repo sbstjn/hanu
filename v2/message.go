@@ -21,24 +21,19 @@ type MessageInterface interface {
 	Channel() string
 }
 
+// NewMessage will create a new message object when given
+// a slack message object
 func NewMessage(ev *slack.MessageEvent) Message {
-	msg := Message{}
-	msg.ChannelID = ev.Channel
-	msg.Message = ev.Text
-	msg.OriginalMessage = ev.Text
-	msg.UserID = ev.Username
-	msg.Type = ev.Type
+	msg := Message{*ev, ev.Text, ev.Channel}
 	return msg
 }
 
-// Message is the Message structure for received and sent messages using Slack
+// Message is the Message structure for received and
+// sent messages using Slack
 type Message struct {
-	ID              uint64
-	Type            string
-	ChannelID       string
-	UserID          string
-	Message         string
-	OriginalMessage string
+	slack.MessageEvent
+	Message   string
+	ChannelID string
 }
 
 // Text returns the message text
@@ -53,7 +48,7 @@ func (m Message) Channel() string {
 
 // User returns the name of the user who sent the message
 func (m Message) User() string {
-	return m.UserID
+	return m.Username
 }
 
 // IsMessage checks if it is a Message or some other kind of processing information
@@ -63,7 +58,7 @@ func (m Message) IsMessage() bool {
 
 // IsFrom checks the sender of the message
 func (m Message) IsFrom(user string) bool {
-	return m.UserID == user
+	return m.User() == user
 }
 
 // SetText updates the text of a message
@@ -118,12 +113,12 @@ func (m Message) IsHelpRequest() bool {
 
 // IsDirectMessage checks if the message is received using a direct messaging channel
 func (m Message) IsDirectMessage() bool {
-	return strings.HasPrefix(m.ChannelID, "D")
+	return strings.HasPrefix(m.Channel(), "D")
 }
 
 // IsMentionFor checks if the given user was mentioned with the message
 func (m Message) IsMentionFor(user string) bool {
-	return strings.HasPrefix(m.OriginalMessage, "<@"+user+">")
+	return strings.HasPrefix(m.MessageEvent.Text, "<@"+user+">")
 }
 
 // IsRelevantFor checks if the message is relevant for a user

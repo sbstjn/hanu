@@ -2,6 +2,7 @@ package hanu
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/nlopes/slack"
@@ -46,6 +47,20 @@ func (b *Bot) SetCommandPrefix(pfx string) *Bot {
 func (b *Bot) SetReplyOnly(ro bool) *Bot {
 	b.ReplyOnly = ro
 	return b
+}
+
+func (b *Bot) notify(msg Message) {
+	chnl := msg.Channel()
+	ch, found := b.msgs[chnl]
+	if !found {
+		return
+	}
+
+	if cap(ch) == len(ch) {
+		return
+	}
+
+	ch <- msg
 }
 
 // Process incoming message
@@ -147,7 +162,11 @@ func (b *Bot) Listen(ctx context.Context) {
 		case ev := <-b.RTM.IncomingEvents:
 			switch v := ev.Data.(type) {
 			case *slack.MessageEvent:
+				data, _ := json.MarshalIndent(v, "", "  ")
+
+				fmt.Println("NEW MSG ", string(data))
 				go b.process(NewMessage(v))
+				go b.notify(NewMessage(v))
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", v.Error())

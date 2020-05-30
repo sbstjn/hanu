@@ -21,9 +21,7 @@ func (sm SayerMock) Say(ch, msg string, a ...interface{}) {
 func TestConversation(t *testing.T) {
 	command := allot.New("cmd test <param>")
 
-	msg := Message{
-		ID: 0,
-	}
+	msg := Message{}
 	msg.SetText("cmd test value")
 
 	match, _ := command.Match(msg.Text())
@@ -46,9 +44,7 @@ func TestConversation(t *testing.T) {
 func TestConnect(t *testing.T) {
 	cmd := allot.New("cmd test <param>")
 
-	msg := Message{
-		ID: 0,
-	}
+	msg := Message{}
 	msg.SetText("cmd test value")
 
 	match, _ := cmd.Match(msg.Text())
