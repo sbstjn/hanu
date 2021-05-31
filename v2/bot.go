@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 // Bot is the main object

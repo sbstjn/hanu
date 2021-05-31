@@ -3,7 +3,7 @@ package hanu
 import (
 	"testing"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 func TestMessage(t *testing.T) {
