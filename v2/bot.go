@@ -29,14 +29,9 @@ func New(token string) (*Bot, error) {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-	// id, err := rtm.GetUserIdentity()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	bot := &Bot{RTM: rtm, msgs: make(map[string]chan Message)}
-	// bot := &Bot{RTM: rtm}
 	bot.connectedWaiter = make(chan bool)
+
 	return bot, nil
 }
 
@@ -174,6 +169,8 @@ func (b *Bot) Listen(ctx context.Context) {
 		case ev := <-b.RTM.IncomingEvents:
 
 			switch v := ev.Data.(type) {
+			case *slack.ConnectedEvent:
+				b.ID = v.Info.User.ID
 			case *slack.HelloEvent:
 				once.Do(func() {
 					close(b.connectedWaiter)
