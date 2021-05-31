@@ -72,10 +72,10 @@ func (m *Message) StripMention(user string) string {
 	text := m.Text()
 
 	if strings.HasPrefix(text, prefix) {
-		return text[len(prefix):len(text)]
+		m.Message = text[len(prefix):]
 	}
 
-	return text
+	return m.Text()
 }
 
 // StripLinkMarkup converts <http://google.com|google.com> into google.com etc.
@@ -103,6 +103,7 @@ func (m *Message) StripLinkMarkup() string {
 		text = strings.Replace(text, "<"+link+">", url, -1)
 	}
 
+	m.Message = text
 	return text
 }
 
