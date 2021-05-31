@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/slack-go/slack"
 )
@@ -17,6 +18,8 @@ type Bot struct {
 	CmdPrefix         string
 	unknownCmdHandler Handler
 	msgs              map[string]chan Message
+
+	connectedWaiter chan bool
 }
 
 // New creates a new bot
@@ -33,7 +36,16 @@ func New(token string) (*Bot, error) {
 
 	bot := &Bot{RTM: rtm, msgs: make(map[string]chan Message)}
 	// bot := &Bot{RTM: rtm}
+	bot.connectedWaiter = make(chan bool)
 	return bot, nil
+}
+
+// WaitForConnection will block until the bot is connected to the RTM
+func (b *Bot) WaitForConnection() {
+	if b.connectedWaiter == nil {
+		return
+	}
+	<-b.connectedWaiter
 }
 
 // SetCommandPrefix will set thing that must be prefixed to the command,
@@ -156,10 +168,14 @@ func (b *Bot) sendHelp(msg MessageInterface) {
 
 // Listen for message on socket
 func (b *Bot) Listen(ctx context.Context) {
-
+	once := new(sync.Once)
 	for {
 		select {
 		case ev := <-b.RTM.IncomingEvents:
+			once.Do(func() {
+				close(b.connectedWaiter)
+				b.connectedWaiter = nil
+			})
 			switch v := ev.Data.(type) {
 			case *slack.MessageEvent:
 				data, _ := json.MarshalIndent(v, "", "  ")
