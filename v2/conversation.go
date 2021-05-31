@@ -39,7 +39,7 @@ func (c *Conversation) Reply(text string, a ...interface{}) {
 	prefix := ""
 
 	if !c.message.IsDirectMessage() {
-		prefix = "<@" + c.message.User() + ">: "
+		prefix = "<@" + c.message.UserID() + ">: "
 	}
 
 	c.bot.Say(c.Message().Channel(), prefix+text, a...)

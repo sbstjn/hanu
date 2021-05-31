@@ -18,6 +18,7 @@ type MessageInterface interface {
 
 	Text() string
 	User() string
+	UserID() string
 	Channel() string
 }
 
@@ -44,6 +45,10 @@ func (m Message) Text() string {
 // Channel returns the channel ID
 func (m Message) Channel() string {
 	return m.ChannelID
+}
+
+func (m Message) UserID() string {
+	return m.MessageEvent.User
 }
 
 // User returns the name of the user who sent the message
