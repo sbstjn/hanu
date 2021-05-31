@@ -172,11 +172,13 @@ func (b *Bot) Listen(ctx context.Context) {
 	for {
 		select {
 		case ev := <-b.RTM.IncomingEvents:
-			once.Do(func() {
-				close(b.connectedWaiter)
-				b.connectedWaiter = nil
-			})
+
 			switch v := ev.Data.(type) {
+			case *slack.HelloEvent:
+				once.Do(func() {
+					close(b.connectedWaiter)
+					b.connectedWaiter = nil
+				})
 			case *slack.MessageEvent:
 				data, _ := json.MarshalIndent(v, "", "  ")
 
