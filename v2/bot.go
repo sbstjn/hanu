@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"sync"
 
 	"github.com/slack-go/slack"
@@ -177,9 +179,10 @@ func (b *Bot) Listen(ctx context.Context) {
 					b.connectedWaiter = nil
 				})
 			case *slack.MessageEvent:
-				data, _ := json.MarshalIndent(v, "", "  ")
-
-				fmt.Println("NEW MSG ", string(data))
+				if os.Getenv("HANU_DEBUG") != "" {
+					data, _ := json.MarshalIndent(v, "", "  ")
+					log.Println("NEW MSG ", string(data))
+				}
 				go b.process(NewMessage(v))
 				go b.notify(NewMessage(v))
 
