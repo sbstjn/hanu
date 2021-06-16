@@ -1,14 +1,21 @@
 package hanu
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/slack-go/slack"
+)
 
 func TestMessage(t *testing.T) {
-	msg := Message{
-		ID:      0,
-		UserID:  "test",
-		Type:    "message",
-		Message: "text",
-	}
+	msg := NewMessage(
+		&slack.MessageEvent{
+			Msg: slack.Msg{
+				Username: "test",
+				Type:     "message",
+				Text:     "text",
+			},
+		},
+	)
 
 	if msg.User() != "test" {
 		t.Errorf("User() should be \"test\"")
