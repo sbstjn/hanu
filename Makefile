@@ -1,5 +1,8 @@
 COVERAGE_FILE ?= c.out
 
+gotest:
+	go test -v ./... -race
+
 test:
 	@ ginkgo -cover -coverprofile=$(COVERAGE_FILE) $(RACE) ./... 
 

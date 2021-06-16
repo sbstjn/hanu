@@ -8,7 +8,7 @@ func TestCommand(t *testing.T) {
 	cmd := NewCommand(
 		"cmd <key>",
 		"Description",
-		func(conv ConversationInterface) {
+		func(conv Convo) {
 
 		},
 	)
@@ -26,7 +26,7 @@ func TestHandle(t *testing.T) {
 	cmd := NewCommand(
 		"cmd <key>",
 		"Description",
-		func(conv ConversationInterface) {
+		func(conv Convo) {
 			str, _ := conv.String("key")
 			if str != "name" {
 				t.Errorf("param <key> should have value \"name\"")

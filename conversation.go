@@ -1,12 +1,11 @@
 package hanu
 
 import (
-	"fmt"
-
-	"golang.org/x/net/websocket"
-
 	"github.com/sbstjn/allot"
 )
+
+// Convo is a shorthand for ConversationInterface
+type Convo ConversationInterface
 
 // ConversationInterface is the interface for a conversation
 type ConversationInterface interface {
@@ -15,15 +14,11 @@ type ConversationInterface interface {
 	Reply(text string, a ...interface{})
 	Match(position int) (string, error)
 	Message() MessageInterface
-
-	SetConnection(connection Connection)
-
-	send(msg MessageInterface)
 }
 
-// Connection is the needed interface for a connection
-type Connection interface {
-	Send(ws *websocket.Conn, v interface{}) (err error)
+// Sayer is an object that can talk in the channel
+type Sayer interface {
+	Say(string, string, ...interface{})
 }
 
 // Conversation stores message, command and socket information and is passed
@@ -31,24 +26,12 @@ type Connection interface {
 type Conversation struct {
 	message Message
 	match   allot.MatchInterface
-	socket  *websocket.Conn
-
-	connection Connection
+	bot     Sayer
 }
 
+// Message returns the convos message
 func (c *Conversation) Message() MessageInterface {
 	return c.message
-}
-
-func (c *Conversation) send(msg MessageInterface) {
-	if c.socket != nil {
-		c.connection.Send(c.socket, msg)
-	}
-}
-
-// SetConnection sets the conversation connection
-func (c *Conversation) SetConnection(connection Connection) {
-	c.connection = connection
 }
 
 // Reply sends message using the socket to Slack
@@ -56,13 +39,10 @@ func (c *Conversation) Reply(text string, a ...interface{}) {
 	prefix := ""
 
 	if !c.message.IsDirectMessage() {
-		prefix = "<@" + c.message.User() + ">: "
+		prefix = "<@" + c.message.UserID() + ">: "
 	}
 
-	msg := c.message
-	msg.SetText(prefix + fmt.Sprintf(text, a...))
-
-	c.send(msg)
+	c.bot.Say(c.Message().Channel(), prefix+text, a...)
 }
 
 // String return string paramter
@@ -81,14 +61,12 @@ func (c Conversation) Match(position int) (string, error) {
 }
 
 // NewConversation returns a Conversation struct
-func NewConversation(match allot.MatchInterface, msg Message, socket *websocket.Conn) ConversationInterface {
+func NewConversation(match allot.MatchInterface, msg Message, bot Sayer) ConversationInterface {
 	conv := &Conversation{
 		message: msg,
 		match:   match,
-		socket:  socket,
+		bot:     bot,
 	}
-
-	conv.SetConnection(websocket.JSON)
 
 	return conv
 }
