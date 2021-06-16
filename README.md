@@ -69,8 +69,6 @@ Of course this works fine with mentioning you bot's username as well:
 @hanu help
 ```
 
-### Slack
-
 Use direct messages for communication:
 
 ```
@@ -83,16 +81,9 @@ Or use the bot in a public channel:
 @hanu version
 ```
 
-## V2 Usage
+You can set the command prefix, if you like using those:
 
-To use version 2 of the package, simply add `/v2` to the package import:
-
-    import "github.com/sbstjn/hanu/v2"
-
-It is very similar to the above, but there are a few extra things.  You can set the
-command prefix, if you like using those:
-
-```
+```go
 bot.SetCommandPrefix("!")
 bot.SetReplyOnly(false)
 ```
@@ -108,7 +99,7 @@ all messages in an attempt to find a command (except help will only be printed w
 
 Also, the `ConversationInterface` was changed to just `Convo` to save your wrists:
 
-```
+```go
 	bot.Command("whisper <word>", func(conv hanu.Convo) {
 		str, _ := conv.String("word")
 		conv.Reply(strings.ToLower(str))
@@ -118,7 +109,7 @@ Also, the `ConversationInterface` was changed to just `Convo` to save your wrist
 The bot can also now talk arbitrarily and has a Channel object that is easy to
 interface with since it's one function:
 
-```
+```go
 bot.Say("UGHXISDF324", "I like %s", "turtles")
 
 devops := bot.Channel("UGHXISDF324")
@@ -127,13 +118,13 @@ devops.Say("Host called %s is not responding to pings", "bobsburgers01")
 
 You can print the help message whenever you want:
 
-```
+```go
 bot.Say("UGHXISDF324", bot.BuildHelpText())
 ```
 
 And there is an unknown command handler, but it only works when in reply only mode:
 
-```
+```go
 bot.SetReplyOnly(true).UnknownCommand(func(c hanu.Convo) {
 	c.Reply(slack.BuildHelpText())
 })
@@ -141,7 +132,7 @@ bot.SetReplyOnly(true).UnknownCommand(func(c hanu.Convo) {
 
 Finally there is the ability to read messages that come into the channel in real time:
 
-```
+```go
 devops := bot.Channel("UGHXISDF324")
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
