@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 )
 
 // MessageInterface defines the message interface
@@ -24,17 +24,64 @@ type MessageInterface interface {
 
 // NewMessage will create a new message object when given
 // a slack message object
-func NewMessage(ev *slack.MessageEvent) Message {
-	msg := Message{*ev, ev.Text, ev.Channel}
-	return msg
+func NewMessage(ev interface{}) Message {
+	m := Message{}
+	sm := new(slackMessage)
+	switch v := ev.(type) {
+	case *slackevents.AppMentionEvent:
+		sm.AppMentionEvent = v
+	case *slackevents.MessageEvent:
+		sm.MessageEvent = v
+	}
+	m.Message = sm.Text()
+	m.ChannelID = sm.Channel()
+	m.Username = sm.User()
+	m.userID = sm.User() // why?
+	return m
+}
+
+type slackMessage struct {
+	*slackevents.MessageEvent
+	*slackevents.AppMentionEvent
+}
+
+func (m slackMessage) Text() string {
+	if m.MessageEvent != nil {
+		return m.MessageEvent.Text
+	}
+	if m.AppMentionEvent != nil {
+		return m.AppMentionEvent.Text
+	}
+	return ""
+}
+
+func (m slackMessage) User() string {
+	if m.MessageEvent != nil {
+		return m.MessageEvent.User
+	}
+	if m.AppMentionEvent != nil {
+		return m.AppMentionEvent.User
+	}
+	return ""
+}
+
+func (m slackMessage) Channel() string {
+	if m.MessageEvent != nil {
+		return m.MessageEvent.Channel
+	}
+	if m.AppMentionEvent != nil {
+		return m.AppMentionEvent.Channel
+	}
+	return ""
 }
 
 // Message is the Message structure for received and
 // sent messages using Slack
 type Message struct {
-	slack.MessageEvent
+	*slackMessage
 	Message   string
 	ChannelID string
+	userID    string
 }
 
 // Text returns the message text
@@ -47,8 +94,8 @@ func (m Message) Channel() string {
 	return m.ChannelID
 }
 
-func (m Message) UserID() string {
-	return m.MessageEvent.User
+func (m Message) UserID() string { //why?
+	return m.userID
 }
 
 // User returns the name of the user who sent the message
