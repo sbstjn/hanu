@@ -3,28 +3,30 @@ package hanu
 import (
 	"testing"
 
-	"golang.org/x/net/websocket"
-
 	"github.com/sbstjn/allot"
 )
 
-type ConnectionMock struct{}
+type SayerMock struct {
+	msg  string
+	ch   string
+	args []interface{}
+}
 
-func (c ConnectionMock) Send(ws *websocket.Conn, v interface{}) (err error) {
-	return nil
+func (sm SayerMock) Say(ch, msg string, a ...interface{}) {
+	sm.ch = ch
+	sm.msg = msg
+	sm.args = a
 }
 
 func TestConversation(t *testing.T) {
 	command := allot.New("cmd test <param>")
 
-	msg := Message{
-		ID: 0,
-	}
+	msg := Message{}
 	msg.SetText("cmd test value")
 
 	match, _ := command.Match(msg.Text())
 
-	conv := NewConversation(match, msg, nil)
+	conv := NewConversation(match, msg, &SayerMock{})
 
 	str, err := conv.String("param")
 
@@ -42,15 +44,12 @@ func TestConversation(t *testing.T) {
 func TestConnect(t *testing.T) {
 	cmd := allot.New("cmd test <param>")
 
-	msg := Message{
-		ID: 0,
-	}
+	msg := Message{}
 	msg.SetText("cmd test value")
 
 	match, _ := cmd.Match(msg.Text())
 
-	conv := NewConversation(match, msg, &websocket.Conn{})
-	conv.SetConnection(ConnectionMock{})
+	conv := NewConversation(match, msg, &SayerMock{})
 
 	conv.Reply("example")
 }
