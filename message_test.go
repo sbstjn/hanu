@@ -3,17 +3,15 @@ package hanu
 import (
 	"testing"
 
-	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 )
 
 func TestMessage(t *testing.T) {
 	msg := NewMessage(
-		&slack.MessageEvent{
-			Msg: slack.Msg{
-				Username: "test",
-				Type:     "message",
-				Text:     "text",
-			},
+		&slackevents.MessageEvent{
+			User: "test",
+			Type: "message",
+			Text: "text",
 		},
 	)
 

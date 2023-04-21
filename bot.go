@@ -3,17 +3,20 @@ package hanu
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
-	"sync"
+	"strings"
 
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+	"github.com/slack-go/slack/socketmode"
 )
 
 // Bot is the main object
 type Bot struct {
-	RTM               *slack.RTM
+	client            *socketmode.Client
 	ID                string
 	Commands          []CommandInterface
 	ReplyOnly         bool
@@ -25,13 +28,29 @@ type Bot struct {
 }
 
 // New creates a new bot
-func New(token string) (*Bot, error) {
-	api := slack.New(token)
+func New(botToken, appToken string) (*Bot, error) {
+	if !strings.HasPrefix(botToken, "xoxb-") {
+		return nil, errors.New("bot token must have the prefix \"xoxb-\"")
+	}
 
-	rtm := api.NewRTM()
-	go rtm.ManageConnection()
+	if !strings.HasPrefix(appToken, "xapp-") {
+		return nil, errors.New("app token must have the prefix \"xapp-\"")
+	}
 
-	bot := &Bot{RTM: rtm, msgs: make(map[string]chan Message)}
+	api := slack.New(
+		botToken,
+		slack.OptionDebug(true),
+		slack.OptionLog(log.New(os.Stdout, "api: ", log.Lshortfile|log.LstdFlags)),
+		slack.OptionAppLevelToken(appToken),
+	)
+
+	client := socketmode.New(
+		api,
+		socketmode.OptionDebug(true),
+		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
+	)
+
+	bot := &Bot{client: client, msgs: make(map[string]chan Message)}
 	bot.connectedWaiter = make(chan bool)
 
 	return bot, nil
@@ -126,11 +145,10 @@ func (b *Bot) Say(channel, msg string, a ...interface{}) {
 }
 
 func (b *Bot) send(msg MessageInterface) {
-	b.RTM.SendMessage(&slack.OutgoingMessage{
-		Channel: msg.Channel(),
-		Text:    msg.Text(),
-		Type:    "message",
-	})
+	b.client.PostMessage(
+		msg.Channel(),
+		slack.MsgOptionText(msg.Text(), false),
+	)
 }
 
 // BuildHelpText will build the help text
@@ -163,35 +181,119 @@ func (b *Bot) sendHelp(msg MessageInterface) {
 	b.Say(msg.Channel(), help)
 }
 
+func (b *Bot) handleEvent(evt *socketmode.Event) {
+	eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
+	if !ok {
+		fmt.Printf("Ignored %+v\n", evt)
+		return
+	}
+
+	fmt.Printf("Event received: %+v\n", eventsAPIEvent)
+
+	b.client.Ack(*evt.Request)
+
+	switch eventsAPIEvent.Type {
+	case slackevents.CallbackEvent:
+		innerEvent := eventsAPIEvent.InnerEvent
+		switch ev := innerEvent.Data.(type) {
+		case *slackevents.AppMentionEvent:
+			_, _, err := b.client.PostMessage(ev.Channel, slack.MsgOptionText("Yes, hello.", false))
+			if err != nil {
+				fmt.Printf("failed posting message: %v", err)
+			}
+			go b.process(NewMessage(ev))
+			go b.notify(NewMessage(ev))
+		case *slackevents.MessageEvent:
+			if os.Getenv("HANU_DEBUG") != "" {
+				data, _ := json.MarshalIndent(evt, "", "  ")
+				log.Println("NEW MSG ", string(data))
+			}
+			go b.process(NewMessage(ev))
+			go b.notify(NewMessage(ev))
+		case *slackevents.MemberJoinedChannelEvent:
+			fmt.Printf("user %q joined to channel %q", ev.User, ev.Channel)
+		}
+	default:
+		b.client.Debugf("unsupported Events API event received")
+	}
+}
+
 // Listen for message on socket
 func (b *Bot) Listen(ctx context.Context) {
-	once := new(sync.Once)
 	for {
 		select {
-		case ev := <-b.RTM.IncomingEvents:
+		case evt := <-b.client.Events:
+			switch evt.Type {
+			case socketmode.EventTypeConnecting:
+				fmt.Println("Connecting to Slack with Socket Mode...")
+			case socketmode.EventTypeConnectionError:
+				fmt.Println("Connection failed. Retrying later...")
+			case socketmode.EventTypeConnected:
+				fmt.Println("Connected to Slack with Socket Mode.")
+				b.ID = evt.Request.ConnectionInfo.AppID
+			case socketmode.EventTypeEventsAPI:
+				b.handleEvent(&evt)
+			case socketmode.EventTypeInteractive:
+				callback, ok := evt.Data.(slack.InteractionCallback)
+				if !ok {
+					fmt.Printf("Ignored %+v\n", evt)
 
-			switch v := ev.Data.(type) {
-			case *slack.ConnectedEvent:
-				b.ID = v.Info.User.ID
-			case *slack.HelloEvent:
-				once.Do(func() {
-					close(b.connectedWaiter)
-					b.connectedWaiter = nil
-				})
-			case *slack.MessageEvent:
-				if os.Getenv("HANU_DEBUG") != "" {
-					data, _ := json.MarshalIndent(v, "", "  ")
-					log.Println("NEW MSG ", string(data))
+					continue
 				}
-				go b.process(NewMessage(v))
-				go b.notify(NewMessage(v))
 
-			case *slack.RTMError:
-				fmt.Printf("Error: %s\n", v.Error())
+				fmt.Printf("Interaction received: %+v\n", callback)
 
-			case *slack.InvalidAuthEvent:
-				fmt.Printf("Invalid credentials")
+				var payload interface{}
+
+				switch callback.Type {
+				case slack.InteractionTypeBlockActions:
+					// See https://api.slack.com/apis/connections/socket-implement#button
+
+					b.client.Debugf("button clicked!")
+				case slack.InteractionTypeShortcut:
+				case slack.InteractionTypeViewSubmission:
+					// See https://api.slack.com/apis/connections/socket-implement#modal
+				case slack.InteractionTypeDialogSubmission:
+				default:
+
+				}
+
+				b.client.Ack(*evt.Request, payload)
+			case socketmode.EventTypeSlashCommand:
+				cmd, ok := evt.Data.(slack.SlashCommand)
+				if !ok {
+					fmt.Printf("Ignored %+v\n", evt)
+
+					continue
+				}
+
+				b.client.Debugf("Slash command received: %+v", cmd)
+
+				payload := map[string]interface{}{
+					"blocks": []slack.Block{
+						slack.NewSectionBlock(
+							&slack.TextBlockObject{
+								Type: slack.MarkdownType,
+								Text: "foo",
+							},
+							nil,
+							slack.NewAccessory(
+								slack.NewButtonBlockElement(
+									"",
+									"somevalue",
+									&slack.TextBlockObject{
+										Type: slack.PlainTextType,
+										Text: "bar",
+									},
+								),
+							),
+						),
+					},
+				}
+
+				b.client.Ack(*evt.Request, payload)
 			}
+
 		case <-ctx.Done():
 			return
 		}
