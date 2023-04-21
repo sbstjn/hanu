@@ -201,7 +201,8 @@ func (b *Bot) handleEvent(evt *socketmode.Event) {
 			if err != nil {
 				fmt.Printf("failed posting message: %v", err)
 			}
-			// router.HandleMention(ev)
+			go b.process(NewMessage(ev))
+			go b.notify(NewMessage(ev))
 		case *slackevents.MessageEvent:
 			if os.Getenv("HANU_DEBUG") != "" {
 				data, _ := json.MarshalIndent(evt, "", "  ")

@@ -5,7 +5,7 @@ import (
 )
 
 // Handler is the interface for the handler function
-type Handler func(ConversationInterface)
+type Handler func(Convo)
 
 // CommandInterface defines a command interface
 type CommandInterface interface {
